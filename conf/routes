@@ -1,0 +1,24 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# An example controller showing how to use dependency injection
+#GET     /count                      controllers.CountController.count
+
+#GET     /                           controllers.ProductController.get
+
+#GET     /addtest                    controllers.ProductController.addTest
+#GET     /get                           controllers.ProductController.test
+
+#POST     /create                     controllers.ProductController.create
+#POST    /test1                       controllers.ProductController.test
+
+POST   /products                    controllers.ProductController.addProduct
+
+GET    /products                    controllers.ProductController.getProduct        
+
+#GET    /product                    controllers.ProductController.getProductReview  # get product with its reviews
+
+#DELETE /product                    controllers.ProductController.deleteProduct
+#->         /v1/posts               controllers.Test
+
