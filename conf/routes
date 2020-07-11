@@ -3,22 +3,16 @@
 # ~~~~
 
 # An example controller showing how to use dependency injection
-#GET     /count                      controllers.CountController.count
-
-#GET     /                           controllers.ProductController.get
-
-#GET     /addtest                    controllers.ProductController.addTest
-#GET     /get                           controllers.ProductController.test
-
-#POST     /create                     controllers.ProductController.create
-#POST    /test1                       controllers.ProductController.test
-
+#add products
 POST   /products                    controllers.ProductController.addProduct
 
+#get all products
 GET    /products                    controllers.ProductController.getProduct        
 
+#update by id
+PUT     /products                    controllers.ProductController.updateProduct
+
+#delete by id
+DELETE /products                      controllers.ProductController.deleteProduct(id: String)
+
 #GET    /product                    controllers.ProductController.getProductReview  # get product with its reviews
-
-#DELETE /product                    controllers.ProductController.deleteProduct
-#->         /v1/posts               controllers.Test
-

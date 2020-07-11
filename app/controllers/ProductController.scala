@@ -65,20 +65,33 @@ class ProductController @Inject()(cc: ControllerComponents)(implicit assetsFinde
   }
  }
 
-def insert = Action {
-  Ok(views.html.test())
-}
-}
-//  def test() = Action { request =>
-//     val input = request.body.asFormUrlEncoded
-//     input.map { args =>
-//       val ques = args("question").head
-//       val ty = args("type").head
-//       Ok(s"$ques --- $ty")
-//     }.getOrElse{
-//       Ok("failed")
-//     }
-//  }
-// }
+ def updateProduct = Action(parse.json) { request =>
+  val result = Json.fromJson[List[Product]](request.body)
 
+  result match {
+    case JsSuccess(products: List[Product], path: JsPath) =>
+      products.map(product => checkID(product))
 
+      def checkID(product: Product) = {
+        val db = app.db.collection("user_question").document(product.id)
+        val p = new ImmutableMap.Builder[String, Object]()
+        .put("brand", product.brand)
+        .put("name" , product.name)
+        .put("price", product.price.toString)
+        .put("salesURL", product.salesURL)
+        .build()
+
+        val add = db.update(p)
+      }
+      Ok("succeed")
+    case e @ JsError(_) =>
+      Ok("error " + JsError.toJson(e))
+  }
+ }
+
+ def deleteProduct(id: String) = Action { request =>
+  val result = app.db.collection("user_question").document(id).delete()
+  Ok("data with id " + id + " is deleted")
+
+ }
+}
