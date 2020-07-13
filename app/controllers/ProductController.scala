@@ -6,7 +6,11 @@ import play.api.mvc._
 import db.FirebaseSetup
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
+import java.lang.Object
+import com.google.api.gax.rpc.NotFoundException
 
+// import 
+// import db.Ehandler._
 /**
  * This controller creates an `Action` to handle HTTP requests to the
  * application's home page.
@@ -21,7 +25,6 @@ class ProductController @Inject()(cc: ControllerComponents)(implicit assetsFinde
 
   implicit val ProductReads: Reads[Product] = Json.reads[Product]
   implicit val QuestionWrites  = Json.writes[Question]
-
 
   def getProduct = Action {
     var list = List[List[String]]()
@@ -61,7 +64,14 @@ class ProductController @Inject()(cc: ControllerComponents)(implicit assetsFinde
       }
       Ok("succeed")
     case e @ JsError(_) =>
-      Ok("error " + JsError.toJson(e))
+      var errorList = List[JsObject]()
+      val errors = JsError.toJson(e).fields
+
+      for (err <- errors){
+        errorList = Json.obj("location" -> err._1 , "details" -> err._2(0)("msg")(0)) :: errorList
+      }
+
+      Results.Status(405)(Json.obj("status" -> true,"description" -> "Invalid Input", "error" -> Json.obj("data" -> errorList)))
   }
  }
 
@@ -69,29 +79,56 @@ class ProductController @Inject()(cc: ControllerComponents)(implicit assetsFinde
   val result = Json.fromJson[List[Product]](request.body)
 
   result match {
-    case JsSuccess(products: List[Product], path: JsPath) =>
-      products.map(product => checkID(product))
+    case JsSuccess(products: List[Product], path: JsPath) => 
+        try{
+          for(product <- products){
+            val db = app.db.collection("user_question").document(product.id)
+            val p = new ImmutableMap.Builder[String, Object]()
+            .put("brand", product.brand)
+            .put("name" , product.name)
+            .put("price", product.price.toString)
+            .put("salesURL", product.salesURL)
+            .build()
+            val add = db.update(p)
+            println(add.get())
+          }
+          Ok("done")
+      
+         } catch   {
+          //  Catches all types of error/exceptions
+          //  Use case to handle known/possible errors and, e: Throwable for anything else
 
-      def checkID(product: Product) = {
-        val db = app.db.collection("user_question").document(product.id)
-        val p = new ImmutableMap.Builder[String, Object]()
-        .put("brand", product.brand)
-        .put("name" , product.name)
-        .put("price", product.price.toString)
-        .put("salesURL", product.salesURL)
-        .build()
-
-        val add = db.update(p)
-      }
-      Ok("succeed")
+          case notFound: java.util.concurrent.ExecutionException => BadRequest("Doc not found")
+          // @todo Solve this shit, find the specific error exception class instead of a catch all case of ExecutionException
+          case e: Throwable =>{
+            println("gsus test", e.getClass().getSimpleName())
+            BadRequest(Json.obj("UNKNOWN" -> e.getMessage))}
+         }
+        
     case e @ JsError(_) =>
-      Ok("error " + JsError.toJson(e))
-  }
- }
+      var errorList = List[JsObject]()
+      val errors = JsError.toJson(e).fields
+
+      BadRequest(Json.obj("mes" -> JsError.toJson(e)))
+
+      for (err <- errors){
+        errorList = Json.obj("location" -> err._1 , "details" -> err._2(0)("msg")(0)) :: errorList
+      }
+
+      Results.Status(405)(Json.obj("status" -> true ,"description" -> "Invalid Input", "error" -> Json.obj("data" -> errorList)))  
+      }
+
+   }
 
  def deleteProduct(id: String) = Action { request =>
-  val result = app.db.collection("user_question").document(id).delete()
-  Ok("data with id " + id + " is deleted")
+  val exist = app.db.collection("user_question").document(id).get().get().exists()
 
+  exist match {
+    case true => {
+      val db = app.db.collection("user_question").document(id).delete()
+      Ok("data with id " + id + " is deleted") 
+    }
+    case _ => Results.Status(400)(id + " doesnt exist")
+  }
  }
 }
