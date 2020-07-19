@@ -8,9 +8,11 @@ import play.api.libs.json._
 import play.api.libs.functional.syntax._
 import java.lang.Object
 import com.google.api.gax.rpc.NotFoundException
-
-// import 
+import scala.collection.mutable.HashMap 
+import java.util.Map
+import scala.collection.JavaConverters._
 // import db.Ehandler._
+
 /**
  * This controller creates an `Action` to handle HTTP requests to the
  * application's home page.
@@ -22,9 +24,14 @@ class ProductController @Inject()(cc: ControllerComponents)(implicit assetsFinde
   val app = new FirebaseSetup
   case class Question( question: String, types: String)
   case class Product(id: String, brand: String, name: String, price: Double, salesURL: String)
+  // case class Reviews(incentivedate: String, incentiveid: ReviewIncentive, product_id: String, review: ReviewAnswer , user_id: String)
+  // case class ReviewIncentive(id: Int, code: String)
+  case class Review(reviews: String)
 
   implicit val ProductReads: Reads[Product] = Json.reads[Product]
   implicit val QuestionWrites  = Json.writes[Question]
+  implicit val ReviewWrites = Json.writes[Review]
+
 
   def getProduct = Action {
     var list = List[List[String]]()
@@ -41,6 +48,67 @@ class ProductController @Inject()(cc: ControllerComponents)(implicit assetsFinde
     val seclist = list.map(l => Question(question= l(0), types = l(1)))
     val result : JsValue = Json.toJson(seclist)
     Ok(result)
+  }
+  
+  //////// review with product id /////////
+  def getProductReview = Action { request =>
+    var list = List[List[String]]()
+    var answerList = List[Object]()
+    // var productList = Map[String,Object]()
+    val querySnapshot = app.db.collection("review").get().get()
+    val docs = querySnapshot.getDocuments()
+
+    docs.forEach(doc => {
+ 
+      val product_id = doc.getString("product_id")
+      val products = app.db.collection("product").document(product_id).get().get()
+      products.forEach(prod => {
+        val data = prod.getId()
+        println(data)
+      })
+      val review_id = doc.getId().toString
+      val reviews = doc.get("review answer").toString
+      list = List(review_id,product_id, reviews) :: list      
+    })
+    val seclist = list.map(l=> Review(review_id = l(0).toString(), prod_id = l(1).toString(), reviews= l(2).toString()))
+    val result : JsValue = Json.toJson(seclist)
+    // println(result)
+
+    Ok(result)
+  }
+
+/////// reviews only
+  def getReview(id : String) = Action { request =>
+    var list = List[Review]()
+    val querySnapshot = app.db.collection("review").get().get()
+    val docs = querySnapshot.getDocuments()
+
+    try{
+      docs.forEach(doc => {
+        val productid = doc.getString("product_id") 
+        if(productid == id){
+          val reviews = Review(reviews = doc.get("review answer").toString)
+          list = reviews :: list
+        }
+          })
+          val empty = list.isEmpty
+          empty match {
+            case true => Results.Status(400)(id + " doesnt exist")
+            case false => {
+              val result: JsValue = Json.toJson(list)
+              Ok(result)
+            }
+          }
+    }   catch   {
+          //  Catches all types of error/exceptions
+          //  Use case to handle known/possible errors and, e: Throwable for anything else
+
+          case notFound: java.util.concurrent.ExecutionException => BadRequest("Doc not found")
+          // @todo Solve this shit, find the specific error exception class instead of a catch all case of ExecutionException
+          case e: Throwable =>{
+            println("gsus test", e.getClass().getSimpleName())
+            BadRequest(Json.obj("UNKNOWN" -> e.getMessage))}
+         }
   }
 
  def addProduct = Action(parse.json) { request =>

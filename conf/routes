@@ -15,4 +15,9 @@ PUT     /products                    controllers.ProductController.updateProduct
 #delete by id
 DELETE /products                      controllers.ProductController.deleteProduct(id: String)
 
-#GET    /product                    controllers.ProductController.getProductReview  # get product with its reviews
+# get product review with product id
+GET    /productreviews                    controllers.ProductController.getProductReview  
+# get product with its reviews
+
+# get product review only
+GET     /review                     controllers.ProductController.getReview(id: String)
