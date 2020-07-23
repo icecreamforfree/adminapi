@@ -3,21 +3,25 @@
 # ~~~~
 
 # An example controller showing how to use dependency injection
+
+### PRODUCT API ###
 #add products
-POST   /products                    controllers.ProductController.addProduct
+POST   /products                    controllers.ProductControllerPsql.addProduct
 
 #get all products
-GET    /products                    controllers.ProductController.getProduct        
+GET    /products                    controllers.ProductControllerPsql.getProduct        
 
 #update by id
-PUT     /products                    controllers.ProductController.updateProduct
+PUT     /products                    controllers.ProductControllerPsql.updateProduct
 
 #delete by id
-DELETE /products                      controllers.ProductController.deleteProduct(id: String)
+DELETE /products                      controllers.ProductControllerPsql.deleteProduct(id: String)
 
 # get product review with product id
-GET    /productreviews                    controllers.ProductController.getProductReview  
-# get product with its reviews
+#GET    /productreviews                    controllers.ProductController.getProductReview  
 
 # get product review only
-GET     /review                     controllers.ProductController.getReview(id: String)
+#GET     /review                     controllers.ProductController.getReview(id: String)
+
+
+

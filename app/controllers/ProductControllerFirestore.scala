@@ -18,20 +18,16 @@ import scala.collection.JavaConverters._
  * application's home page.
  */
 @Singleton
-class ProductController @Inject()(cc: ControllerComponents)(implicit assetsFinder: AssetsFinder)
+class ProductControllerFirestore @Inject()(cc: ControllerComponents)(implicit assetsFinder: AssetsFinder)
   extends AbstractController(cc) {
 
   val app = new FirebaseSetup
-  case class Question( question: String, types: String)
-  case class Product(id: String, brand: String, name: String, price: Double, salesURL: String)
-  // case class Reviews(incentivedate: String, incentiveid: ReviewIncentive, product_id: String, review: ReviewAnswer , user_id: String)
-  // case class ReviewIncentive(id: Int, code: String)
+  case class Product(pid: String, brand: String, name: String, price: Double, salesURL: String)
   case class Review(reviews: String)
 
+  implicit val ProductWrites = Json.writes[Product]
   implicit val ProductReads: Reads[Product] = Json.reads[Product]
-  implicit val QuestionWrites  = Json.writes[Question]
   implicit val ReviewWrites = Json.writes[Review]
-
 
   def getProduct = Action {
     var list = List[List[String]]()
@@ -40,42 +36,45 @@ class ProductController @Inject()(cc: ControllerComponents)(implicit assetsFinde
     val docs = querySnapshot.getDocuments()
 
     docs.forEach(doc => {
-      val question = doc.getString("question")
-      val types = doc.getString("type")
-      list = List(question,types) :: list
+      val productid = doc.getString("id")
+        val name = doc.getString("product_name")
+        val brand = doc.getString("brand")
+        val price = doc.getLong("price").toString
+        val salesURL = doc.getString("salesURl")
+        list = List(productid, brand, name, price, salesURL) :: list
     })
 
-    val seclist = list.map(l => Question(question= l(0), types = l(1)))
+    val seclist = list.map(l => Product(pid= l(0), brand= l(1), name = l(2), price = l(3).toDouble, salesURL=l(4)))
     val result : JsValue = Json.toJson(seclist)
     Ok(result)
   }
   
   //////// review with product id /////////
-  def getProductReview = Action { request =>
-    var list = List[List[String]]()
-    var answerList = List[Object]()
-    // var productList = Map[String,Object]()
-    val querySnapshot = app.db.collection("review").get().get()
-    val docs = querySnapshot.getDocuments()
+  // def getProductReview = Action { request =>
+  //   var list = List[List[String]]()
+  //   var answerList = List[Object]()
+  //   // var productList = Map[String,Object]()
+  //   val querySnapshot = app.db.collection("review").get().get()
+  //   val docs = querySnapshot.getDocuments()
 
-    docs.forEach(doc => {
+  //   docs.forEach(doc => {
  
-      val product_id = doc.getString("product_id")
-      val products = app.db.collection("product").document(product_id).get().get()
-      products.forEach(prod => {
-        val data = prod.getId()
-        println(data)
-      })
-      val review_id = doc.getId().toString
-      val reviews = doc.get("review answer").toString
-      list = List(review_id,product_id, reviews) :: list      
-    })
-    val seclist = list.map(l=> Review(review_id = l(0).toString(), prod_id = l(1).toString(), reviews= l(2).toString()))
-    val result : JsValue = Json.toJson(seclist)
-    // println(result)
+  //     val product_id = doc.getString("product_id")
+  //     val products = app.db.collection("product").document(product_id).get().get()
+  //     // products.forEach(prod => {
+  //     //   val data = prod.getId()
+  //     //   println(data)
+  //     // })
+  //     val review_id = doc.getId().toString
+  //     val reviews = doc.get("review answer").toString
+  //     list = List(review_id,product_id, reviews) :: list      
+  //   })
+  //   val seclist = list.map(l=> Review(review_id = l(0).toString(), prod_id = l(1).toString(), reviews= l(2).toString()))
+  //   val result : JsValue = Json.toJson(seclist)
+  //   // println(result)
 
-    Ok(result)
-  }
+  //   Ok(result)
+  // }
 
 /////// reviews only
   def getReview(id : String) = Action { request =>
@@ -120,7 +119,7 @@ class ProductController @Inject()(cc: ControllerComponents)(implicit assetsFinde
       products.map(product => collect(product))
 
       def collect(product: Product) = {
-        val db = app.db.collection("user_question").document(product.id)
+        val db = app.db.collection("user_question").document(product.pid)
         val p = new ImmutableMap.Builder[Object,Object]()
         .put("brand", product.brand)
         .put("name" , product.name)
@@ -150,7 +149,7 @@ class ProductController @Inject()(cc: ControllerComponents)(implicit assetsFinde
     case JsSuccess(products: List[Product], path: JsPath) => 
         try{
           for(product <- products){
-            val db = app.db.collection("user_question").document(product.id)
+            val db = app.db.collection("user_question").document(product.pid)
             val p = new ImmutableMap.Builder[String, Object]()
             .put("brand", product.brand)
             .put("name" , product.name)
@@ -189,11 +188,11 @@ class ProductController @Inject()(cc: ControllerComponents)(implicit assetsFinde
    }
 
  def deleteProduct(id: String) = Action { request =>
-  val exist = app.db.collection("user_question").document(id).get().get().exists()
+  val exist = app.db.collection("product").document(id).get().get().exists()
 
   exist match {
     case true => {
-      val db = app.db.collection("user_question").document(id).delete()
+      val db = app.db.collection("product").document(id).delete()
       Ok("data with id " + id + " is deleted") 
     }
     case _ => Results.Status(400)(id + " doesnt exist")
