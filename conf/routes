@@ -6,22 +6,21 @@
 
 ### PRODUCT API ###
 #add products
-POST   /products                    controllers.ProductControllerPsql.addProduct
+POST   /products                    controllers.ProductControllerMongo.addProduct
 
 #get all products
-GET    /products                    controllers.ProductControllerPsql.getProduct        
+GET    /products                    controllers.ProductControllerMongo.getProduct        
 
 #update by id
-PUT     /products                    controllers.ProductControllerPsql.updateProduct
+#PUT     /products                    controllers.ProductControllerPsql.updateProduct
 
 #delete by id
-DELETE /products                      controllers.ProductControllerPsql.deleteProduct(id: String)
+#DELETE /products                      controllers.ProductControllerFirestore.deleteProduct(id: String)
 
 # get product review with product id
 #GET    /productreviews                    controllers.ProductController.getProductReview  
 
 # get product review only
 #GET     /review                     controllers.ProductController.getReview(id: String)
-
 
 

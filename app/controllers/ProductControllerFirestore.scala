@@ -32,15 +32,15 @@ class ProductControllerFirestore @Inject()(cc: ControllerComponents)(implicit as
   def getProduct = Action {
     var list = List[List[String]]()
 
-    val querySnapshot = app.db.collection("user_question").get().get()
+    val querySnapshot = app.db.collection("product").get().get()
     val docs = querySnapshot.getDocuments()
 
     docs.forEach(doc => {
-      val productid = doc.getString("id")
+      val productid = doc.getId()
         val name = doc.getString("product_name")
         val brand = doc.getString("brand")
-        val price = doc.getLong("price").toString
-        val salesURL = doc.getString("salesURl")
+        val price = doc.get("price").toString
+        val salesURL = doc.getString("salesURL")
         list = List(productid, brand, name, price, salesURL) :: list
     })
 
