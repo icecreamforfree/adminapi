@@ -13,13 +13,14 @@ lazy val root = (project in file("."))
       "org.postgresql" % "postgresql" % "9.4-1200-jdbc41",
       // "cn.playscala" % "play-mongo_2.12" % "0.3.0"
       // "org.reactivemongo" %% "play2-reactivemongo" % "0.12.4"
-      "org.reactivemongo" %% "play2-reactivemongo" % "0.20.11-play28",
-      "org.reactivemongo" %% "reactivemongo-play-json-compat" % "0.20.9-play28"
+      // "org.reactivemongo" %% "play2-reactivemongo" % "0.20.11-play28",
+      // "org.reactivemongo" %% "reactivemongo-play-json-compat" % "0.20.9-play28",
+      "org.mongodb.scala" %% "mongo-scala-driver" % "2.9.0"
     ),
     scalacOptions ++= Seq(
       "-feature",
       "-deprecation",
       "-Xfatal-warnings"  
-    )
+    ),
     // addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.1" cross CrossVersion.full)
   )

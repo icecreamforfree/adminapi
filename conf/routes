@@ -6,13 +6,13 @@
 
 ### PRODUCT API ###
 #add products
-POST   /products                    controllers.ProductControllerMongo.addProduct
+POST   /products                    controllers.ProductControllerTest.addProduct
 
 #get all products
-GET    /products                    controllers.ProductControllerMongo.getProduct        
+#GET    /products                    controllers.ProductControllerTest.getProduct        
 
 #update by id
-#PUT     /products                    controllers.ProductControllerPsql.updateProduct
+#PUT     /products                    controllers.ProductControllerTest.updateProduct
 
 #delete by id
 #DELETE /products                      controllers.ProductControllerFirestore.deleteProduct(id: String)
