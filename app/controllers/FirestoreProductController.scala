@@ -11,14 +11,14 @@ import com.google.api.gax.rpc.NotFoundException
 import scala.collection.mutable.HashMap 
 import java.util.Map
 import scala.collection.JavaConverters._
-// import db.Ehandler._
+import db.Prod
 
 /**
  * This controller creates an `Action` to handle HTTP requests to the
  * application's home page.
  */
 @Singleton
-class ProductControllerFirestore @Inject()(cc: ControllerComponents)(implicit assetsFinder: AssetsFinder)
+class FirestoreProductController @Inject()(cc: ControllerComponents)(implicit assetsFinder: AssetsFinder)
   extends AbstractController(cc) {
 
   val app = new FirebaseSetup
@@ -29,25 +29,25 @@ class ProductControllerFirestore @Inject()(cc: ControllerComponents)(implicit as
   implicit val ProductReads: Reads[Product] = Json.reads[Product]
   implicit val ReviewWrites = Json.writes[Review]
 
-  def getProduct = Action {
-    var list = List[List[String]]()
+  def getProduct: JsValue = {
+        var list = List[List[String]]()
 
-    val querySnapshot = app.db.collection("product").get().get()
-    val docs = querySnapshot.getDocuments()
+        val querySnapshot = app.db.collection("product").get().get()
+        val docs = querySnapshot.getDocuments()
 
-    docs.forEach(doc => {
-      val productid = doc.getId()
-        val name = doc.getString("product_name")
-        val brand = doc.getString("brand")
-        val price = doc.get("price").toString
-        val salesURL = doc.getString("salesURL")
-        list = List(productid, brand, name, price, salesURL) :: list
-    })
+        docs.forEach(doc => {
+        val productid = doc.getId()
+            val name = doc.getString("product_name")
+            val brand = doc.getString("brand")
+            val price = doc.get("price").toString
+            val salesURL = doc.getString("salesURL")
+            list = List(productid, brand, name, price, salesURL) :: list
+        })
 
-    val seclist = list.map(l => Product(pid= l(0), brand= l(1), name = l(2), price = l(3).toDouble, salesURL=l(4)))
-    val result : JsValue = Json.toJson(seclist)
-    Ok(result)
-  }
+        val seclist = list.map(l => Product(pid= l(0), brand= l(1), name = l(2), price = l(3).toDouble, salesURL=l(4)))
+        val result : JsValue = Json.toJson(seclist)
+        Ok(result)
+    }  
   
   //////// review with product id /////////
   // def getProductReview = Action { request =>

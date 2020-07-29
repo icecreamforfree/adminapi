@@ -20,4 +20,5 @@ class FirebaseSetup {
       }
     )
     val db = FirestoreClient.getFirestore()
+    
 }

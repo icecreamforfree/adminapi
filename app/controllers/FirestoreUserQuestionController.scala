@@ -11,6 +11,8 @@ import com.google.api.gax.rpc.NotFoundException
 import scala.collection.mutable.HashMap 
 import java.util.Map
 import scala.collection.JavaConverters._
+
+
 // import db.Ehandler._
 
 /**
@@ -18,7 +20,7 @@ import scala.collection.JavaConverters._
  * application's home page.
  */
 @Singleton
-class UserQuestionControllerFirestore @Inject()(cc: ControllerComponents)(implicit assetsFinder: AssetsFinder)
+class FirestoreUserQuestionController @Inject()(cc: ControllerComponents)(implicit assetsFinder: AssetsFinder)
   extends AbstractController(cc) {
 
   val app = new FirebaseSetup
@@ -75,7 +77,7 @@ class UserQuestionControllerFirestore @Inject()(cc: ControllerComponents)(implic
   }
  }
 
- def updateProduct = Action(parse.json) { request =>
+ def updateQuestion = Action(parse.json) { request =>
   val result = Json.fromJson[List[Question]](request.body)
 
   result match {
@@ -118,7 +120,7 @@ class UserQuestionControllerFirestore @Inject()(cc: ControllerComponents)(implic
 
    }
 
- def deleteProduct(id: String) = Action { request =>
+ def deleteQuestion(id: String) = Action { request =>
   val exist = app.db.collection("user_question").document(id).get().get().exists()
 
   exist match {

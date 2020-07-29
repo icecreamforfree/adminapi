@@ -8,56 +8,52 @@ import play.api.libs.json._
 import org.postgresql.util.PSQLException
 
 @Singleton
-class ProductControllerPsql @Inject() (cc: ControllerComponents, db: Database) extends AbstractController(cc) {
+class PsqlReviewQuestionController @Inject() (cc: ControllerComponents, db: Database) extends AbstractController(cc) {
 
   
-  case class Product(pid: String, brand: String, name: String, price: Double, sales_url: String)
+  case class Question(qid: String, question: String, types: String) 
 
-  implicit val ProductWrites = Json.writes[Product]
-  implicit val ProductReads: Reads[Product] = Json.reads[Product]
+  implicit val QuestionWrites  = Json.writes[Question]
+  implicit val QuestionReads: Reads[Question] = Json.reads[Question]
 
 
-  def getProduct = Action {
+  def getQuestion = Action {
     var list = List[List[String]]()
     val conn = db.getConnection()
     val stmt = conn.createStatement()
 
     try {
       
-      val rs   = stmt.executeQuery("Select * from product")
+      val rs   = stmt.executeQuery("Select * from review_question")
 
       while (rs.next()) {
-        val productid = rs.getString("_id")
-        val name = rs.getString("product_name")
-        val brand = rs.getString("brand")
-        val price = rs.getLong("price").toString
-        val sales_url = rs.getString("sales_url")
-        list = List(productid, brand, name, price, sales_url) :: list
+        val qid = rs.getString("_id")
+        val question = rs.getString("question")
+        val types = rs.getString("type")
+        list = List(qid,question,types) :: list
       }
     } finally {   
       conn.close()
     }
-    val seclist = list.map(l => Product(pid= l(0), brand= l(1), name = l(2), price = l(3).toDouble, sales_url=l(4)))
+    val seclist = list.map(l => Question(qid= l(0), question= l(1), types = l(2)))
     val result : JsValue = Json.toJson(seclist)
     Ok(result)
   }
 
-  def addProduct = Action(parse.json) { request =>
-    val result = Json.fromJson[List[Product]](request.body)
+  def addQuestion = Action(parse.json) { request =>
+    val result = Json.fromJson[List[Question]](request.body)
     val conn = db.getConnection()
     val stmt = conn.createStatement()
 
     result match {
-      case JsSuccess(products: List[Product], path: JsPath) =>
+      case JsSuccess(questions: List[Question], path: JsPath) =>
         try {
-        products.map(product => {
-          val productid = product.pid
-          val brand = product.brand
-          val name = product.name
-          val price = product.price
-          val sales_url = product.sales_url
+        questions.map(question => {
+          val qid = question.qid
+          val ques = question.question
+          val types = question.types
 
-          val rs = stmt.executeUpdate(s"INSERT INTO product(_id, product_name, brand, price, sales_url) VALUES('$productid' ,'$name', '$brand', $price, '$sales_url')")
+          val rs = stmt.executeUpdate(s"INSERT INTO review_question(_id, question, type) VALUES('$qid' ,'$ques', '$types')")
           })
         Ok("ok")
         } catch {
@@ -80,22 +76,20 @@ class ProductControllerPsql @Inject() (cc: ControllerComponents, db: Database) e
       }
     }  
 
-    def updateProduct = Action(parse.json) { request =>
-    val result = Json.fromJson[List[Product]](request.body)
+    def updateQuestion = Action(parse.json) { request =>
+    val result = Json.fromJson[List[Question]](request.body)
     val conn = db.getConnection()
     val stmt = conn.createStatement()
 
     result match {
-      case JsSuccess(products: List[Product], path: JsPath) =>
+      case JsSuccess(questions: List[Question], path: JsPath) =>
         try {
-        products.map(product => {
-          val productid = product.pid
-          val brand = product.brand
-          val name = product.name
-          val price = product.price
-          val sales_url = product.sales_url
+        questions.map(question => {
+          val qid = question.qid
+          val ques = question.question
+          val types = question.types
 
-          val rs = stmt.executeUpdate(s"UPDATE product SET product_name = '$name', brand= '$brand', price = $price, sales_url= '$sales_url' WHERE _id='$productid'")
+          val rs = stmt.executeUpdate(s"UPDATE review_question SET question = '$ques', type = '$types' WHERE _id = '$qid')")
           })
         Ok("ok")
         } catch {
@@ -120,15 +114,15 @@ class ProductControllerPsql @Inject() (cc: ControllerComponents, db: Database) e
 
 
 
-    def deleteProduct(id: String) = Action { request =>
+    def deleteQuestion(id: String) = Action { request =>
       val conn = db.getConnection()
       val stmt = conn.createStatement()
-      val exist = stmt.executeQuery(s"select exists(select 1 from product where _id='$id')").next()
+      val exist = stmt.executeQuery(s"select exists(select 1 from review_question where _id='$id')").next()
       println(exist)
       exist match {
       case true => {
         try {
-          val delete = stmt.executeUpdate(s"DELETE FROM product WHERE _id='$id'")
+          val delete = stmt.executeUpdate(s"DELETE FROM review_question WHERE _id='$id'")
           // val db = app.db.collection("product").document(id).delete()
           Ok("data with id " + id + " is deleted") 
           } catch {
