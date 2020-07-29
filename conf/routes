@@ -47,7 +47,7 @@ POST   /firestore/review_question                  controllers.FirestoreReviewQu
 POST   /psql/review_question                       controllers.PsqlReviewQuestionController.addQuestion
 
 #get all review quesiton
-GET    /firestore/review_questionn                   controllers.FirestoreReviewQuestionController.getQuestion        
+GET    /firestore/review_question                   controllers.FirestoreReviewQuestionController.getQuestion        
 GET    /psql/review_question                       controllers.PsqlReviewQuestionController.getQuestion        
 
 #update by id
@@ -60,19 +60,19 @@ DELETE /psql/review_question                      controllers.PsqlReviewQuestion
 
 #INCENTIVE#
 #add incentive
-#POST   /firestore/incentive                  controllers.FirestoreIncentiveController.addIncentive
-#POST   /psql/incentive                       controllers.PsqlIncentiveController.addIncentive
+POST   /firestore/incentive                  controllers.FirestoreIncentiveController.addIncentive
+POST   /psql/incentive                       controllers.PsqlIncentiveController.addIncentive
 
 #get all incentive
-#GET    /firestore/incentive                   controllers.FirestoreIncentiveController.getIncentive       
-#GET    /psql/incentive                       controllers.PsqlIncentiveController.getIncentive       
+GET    /firestore/incentive                   controllers.FirestoreIncentiveController.getIncentive       
+GET    /psql/incentive                       controllers.PsqlIncentiveController.getIncentive       
 
 #update by id
-#PUT     /firestore/incentive                 controllers.FirestoreIncentiveController.updateIncentive
-#PUT     /psql/incentive                      controllers.PsqlIncentiveController.updateIncentive
+PUT     /firestore/incentive                 controllers.FirestoreIncentiveController.updateIncentive
+PUT     /psql/incentive                      controllers.PsqlIncentiveController.updateIncentive
 
 #delete by id
-#DELETE /firestore/incentive                 controllers.FirestoreIncentiveController.deleteIncentive(id: String)
-#DELETE /psql/incentive                      controllers.PsqlIncentiveController.deleteIncentive(id: String)
+DELETE /firestore/incentive                 controllers.FirestoreIncentiveController.deleteIncentive(id: String)
+DELETE /psql/incentive                      controllers.PsqlIncentiveController.deleteIncentive(id: String)
 
 #GET     /getProduct                                controllers.MainController.getProduct

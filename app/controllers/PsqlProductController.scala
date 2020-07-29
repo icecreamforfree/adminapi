@@ -59,7 +59,7 @@ class PsqlProductController @Inject() (cc: ControllerComponents, db: Database) e
 
           val rs = stmt.executeUpdate(s"INSERT INTO product(_id, product_name, brand, price, sales_url) VALUES('$productid' ,'$name', '$brand', $price, '$sales_url')")
           })
-        Ok("ok")
+      Ok(Json.obj("status" -> "succeed", "operation" -> "add"))
         } catch {
             case e : PSQLException => BadRequest(Json.obj("PSQL Error" -> e.getMessage))
             case e : Throwable => {
@@ -97,7 +97,7 @@ class PsqlProductController @Inject() (cc: ControllerComponents, db: Database) e
 
           val rs = stmt.executeUpdate(s"UPDATE product SET product_name = '$name', brand= '$brand', price = $price, sales_url= '$sales_url' WHERE _id='$productid'")
           })
-        Ok("ok")
+      Ok(Json.obj("status" -> "succeed", "operation" -> "update"))
         } catch {
             case e : PSQLException => BadRequest(Json.obj("PSQL Error" -> e.getMessage))
             case e : Throwable => {
@@ -130,7 +130,7 @@ class PsqlProductController @Inject() (cc: ControllerComponents, db: Database) e
         try {
           val delete = stmt.executeUpdate(s"DELETE FROM product WHERE _id='$id'")
           // val db = app.db.collection("product").document(id).delete()
-          Ok("data with id " + id + " is deleted") 
+      Ok(Json.obj("status" -> "succeed", "operation" -> "delete"))
           } catch {
             case e : PSQLException => BadRequest(Json.obj("PSQL Error" -> e.getMessage))
             case e : Throwable => {

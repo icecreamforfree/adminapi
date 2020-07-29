@@ -7,6 +7,7 @@ import play.api.db._
 import play.api.libs.json._
 import org.postgresql.util.PSQLException
 
+
 @Singleton
 class PsqlUserQuestionController @Inject() (cc: ControllerComponents, db: Database) extends AbstractController(cc) {
 
@@ -53,9 +54,9 @@ class PsqlUserQuestionController @Inject() (cc: ControllerComponents, db: Databa
           val ques = question.question
           val types = question.types
 
-          val rs = stmt.executeUpdate(s"INSERT INTO user_question(_id, question, type) VALUES('$qid' ,'$ques', '$types'")
+          val rs = stmt.executeUpdate(s"INSERT INTO user_question(_id, question, type) VALUES('$qid' ,'$ques', '$types')")
           })
-        Ok("ok")
+      Ok(Json.obj("status" -> "succeed", "operation" -> "add"))
         } catch {
             case e : PSQLException => BadRequest(Json.obj("PSQL Error" -> e.getMessage))
             case e : Throwable => {
@@ -91,7 +92,7 @@ class PsqlUserQuestionController @Inject() (cc: ControllerComponents, db: Databa
 
           val rs = stmt.executeUpdate(s"UPDATE user_question SET question = '$ques', type = '$types' WHERE _id = '$qid'")
           })
-        Ok("ok")
+      Ok(Json.obj("status" -> "succeed", "operation" -> "update"))
         } catch {
             case e : PSQLException => BadRequest(Json.obj("PSQL Error" -> e.getMessage))
             case e : Throwable => {
@@ -124,7 +125,7 @@ class PsqlUserQuestionController @Inject() (cc: ControllerComponents, db: Databa
         try {
           val delete = stmt.executeUpdate(s"DELETE FROM user_question WHERE _id='$id'")
           // val db = app.db.collection("product").document(id).delete()
-          Ok("data with id " + id + " is deleted") 
+      Ok(Json.obj("status" -> "succeed", "operation" -> "delete"))
           } catch {
             case e : PSQLException => BadRequest(Json.obj("PSQL Error" -> e.getMessage))
             case e : Throwable => {

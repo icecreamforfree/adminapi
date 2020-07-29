@@ -64,7 +64,7 @@ class FirestoreUserQuestionController @Inject()(cc: ControllerComponents)(implic
 
         val add = db.set(p)
       }
-      Ok("succeed")
+      Ok(Json.obj("status" -> "succeed", "operation" -> "add"))
     case e @ JsError(_) =>
       var errorList = List[JsObject]()
       val errors = JsError.toJson(e).fields
@@ -92,7 +92,7 @@ class FirestoreUserQuestionController @Inject()(cc: ControllerComponents)(implic
             val add = db.update(p)
             println(add.get())
           }
-          Ok("done")
+      Ok(Json.obj("status" -> "succeed", "operation" -> "update"))
       
          } catch   {
           //  Catches all types of error/exceptions
@@ -126,7 +126,7 @@ class FirestoreUserQuestionController @Inject()(cc: ControllerComponents)(implic
   exist match {
     case true => {
       val db = app.db.collection("user_question").document(id).delete()
-      Ok("data with id " + id + " is deleted") 
+      Ok(Json.obj("status" -> "succeed", "operation" -> "delete"))
     }
     case _ => Results.Status(400)(id + " doesnt exist")
   }

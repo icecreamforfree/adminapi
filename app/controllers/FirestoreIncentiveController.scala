@@ -1,199 +1,144 @@
-// package controllers
+package controllers
 
-// import com.google.common.collect.ImmutableMap
-// import javax.inject._
-// import play.api.mvc._
-// import db.FirebaseSetup
-// import play.api.libs.json._
-// import play.api.libs.functional.syntax._
-// import java.lang.Object
-// import com.google.api.gax.rpc.NotFoundException
-// import scala.collection.mutable.HashMap 
-// import java.util.Map
-// import scala.collection.JavaConverters._
-// // import db.Ehandler._
+import com.google.common.collect.ImmutableMap
+import javax.inject._
+import play.api.mvc._
+import db.FirebaseSetup
+import play.api.libs.json._
+import play.api.libs.functional.syntax._
+import java.lang.Object
+import com.google.api.gax.rpc.NotFoundException
+import scala.collection.mutable.HashMap 
+import java.util.Map
+import scala.collection.JavaConverters._
+// import db.Ehandler._
 
-// /**
-//  * This controller creates an `Action` to handle HTTP requests to the
-//  * application's home page.
-//  */
-// @Singleton
-// class FirestoreIncentiveController @Inject()(cc: ControllerComponents)(implicit assetsFinder: AssetsFinder)
-//   extends AbstractController(cc) {
+/**
+ * This controller creates an `Action` to handle HTTP requests to the
+ * application's home page.
+ */
+@Singleton
+class FirestoreIncentiveController @Inject()(cc: ControllerComponents)(implicit assetsFinder: AssetsFinder)
+  extends AbstractController(cc) {
 
-//   val app = new FirebaseSetup
-//   case class Incentive(iid: String, code: String, startDate: Date, endDate: Date, productID: String)
+  val app = new FirebaseSetup
+  case class Incentive(iid: String, code: String, start_date: String, end_date: String,tc: String, condition: String, product_id: String)
 
-//   implicit val IncentiveWrites = Json.writes[Incentive]
-//   implicit val IncentiveReads: Reads[Incentive] = Json.reads[Incentive]
+  implicit val IncentiveWrites = Json.writes[Incentive]
+  implicit val IncentiveReads: Reads[Incentive] = Json.reads[Incentive]
 
-//   def getProduct = Action {
-//     var list = List[List[String]]()
+  def getIncentive = Action {
+    var list = List[List[String]]()
 
-//     val querySnapshot = app.db.collection("incentive").get().get()
-//     val docs = querySnapshot.getDocuments()
+    val querySnapshot = app.db.collection("incentive").get().get()
+    val docs = querySnapshot.getDocuments()
 
-//     docs.forEach(doc => {
-//         val iid = rs.getString("_id")
-//         val code = rs.getString("code")
-//         val sdate = rs.getDate("start_date")
-//         val edate = rs.getDate("end_date")
-//         val pid = rs.getString("product_id")
-//         list = List(iid,code, sdate,edate,pid) :: list
-//     })
+    docs.forEach(doc => {
+        val iid = doc.getId()
+        val code = doc.getString("code")
+        val sdate = doc.getString("start_date")
+        val edate = doc.getString("end_date")
+        val tc = doc.getString("tc")
+        val condition = doc.getString("condition")
+        val pid = doc.getString("product_id")
+        list = List(iid,code, sdate,edate,tc,condition,pid) :: list
+    })
 
-//     val seclist = list.map(l => Product(pid= l(0), brand= l(1), name = l(2), price = l(3).toDouble, sales_url=l(4)))
-//     val result : JsValue = Json.toJson(seclist)
-//     Ok(result)
-//   }
+    val seclist = list.map(l => Incentive(iid= l(0), code= l(1),  start_date= l(2), end_date = l(3), tc=l(4), condition=l(5) ,product_id=l(6)))
+    val result : JsValue = Json.toJson(seclist)
+    Ok(result)
+  }
   
-//   //////// review with product id /////////
-//   // def getProductReview = Action { request =>
-//   //   var list = List[List[String]]()
-//   //   var answerList = List[Object]()
-//   //   // var productList = Map[String,Object]()
-//   //   val querySnapshot = app.db.collection("review").get().get()
-//   //   val docs = querySnapshot.getDocuments()
 
-//   //   docs.forEach(doc => {
+ def addIncentive = Action(parse.json) { request =>
  
-//   //     val product_id = doc.getString("product_id")
-//   //     val products = app.db.collection("product").document(product_id).get().get()
-//   //     // products.forEach(prod => {
-//   //     //   val data = prod.getId()
-//   //     //   println(data)
-//   //     // })
-//   //     val review_id = doc.getId().toString
-//   //     val reviews = doc.get("review answer").toString
-//   //     list = List(review_id,product_id, reviews) :: list      
-//   //   })
-//   //   val seclist = list.map(l=> Review(review_id = l(0).toString(), prod_id = l(1).toString(), reviews= l(2).toString()))
-//   //   val result : JsValue = Json.toJson(seclist)
-//   //   // println(result)
-
-//   //   Ok(result)
-//   // }
-
-// /////// reviews only
-//   def getReview(id : String) = Action { request =>
-//     var list = List[Review]()
-//     val querySnapshot = app.db.collection("review").get().get()
-//     val docs = querySnapshot.getDocuments()
-
-//     try{
-//       docs.forEach(doc => {
-//         val productid = doc.getString("product_id") 
-//         if(productid == id){
-//           val reviews = Review(reviews = doc.get("review answer").toString)
-//           list = reviews :: list
-//         }
-//           })
-//           val empty = list.isEmpty
-//           empty match {
-//             case true => Results.Status(400)(id + " doesnt exist")
-//             case false => {
-//               val result: JsValue = Json.toJson(list)
-//               Ok(result)
-//             }
-//           }
-//     }   catch   {
-//           //  Catches all types of error/exceptions
-//           //  Use case to handle known/possible errors and, e: Throwable for anything else
-
-//           case notFound: java.util.concurrent.ExecutionException => BadRequest("Doc not found")
-//           // @todo Solve this shit, find the specific error exception class instead of a catch all case of ExecutionException
-//           case e: Throwable =>{
-//             println("gsus test", e.getClass().getSimpleName())
-//             BadRequest(Json.obj("UNKNOWN" -> e.getMessage))}
-//          }
-//   }
-
-//  def addProduct = Action(parse.json) { request =>
- 
-//   val result = Json.fromJson[List[Product]](request.body)
+  val result = Json.fromJson[List[Incentive]](request.body)
   
-//   result match {
-//     case JsSuccess(products: List[Product], path: JsPath) =>
-//       products.map(product => collect(product))
+  result match {
+    case JsSuccess(incentives: List[Incentive], path: JsPath) =>
+      incentives.map(incentive => collect(incentive))
 
-//       def collect(product: Product) = {
-//         val db = app.db.collection("user_question").document(product.pid)
-//         val p = new ImmutableMap.Builder[Object,Object]()
-//         .put("brand", product.brand)
-//         .put("name" , product.name)
-//         .put("price", product.price.toString)
-//         .put("salesURL", product.salesURL)
-//         .build()
+      def collect(incentive: Incentive) = {
+        val db = app.db.collection("incentive").document(incentive.iid)
+        val p = new ImmutableMap.Builder[Object,Object]()
+        .put("code", incentive.code)
+        .put("start_date" , incentive.start_date)
+        .put("end_date", incentive.start_date)
+        .put("tc", incentive.tc)
+        .put("condition", incentive.condition)
+        .put("product_id", incentive.product_id)
+        .build()
 
-//         val add = db.set(p)
-//       }
-//       Ok("succeed")
-//     case e @ JsError(_) =>
-//       var errorList = List[JsObject]()
-//       val errors = JsError.toJson(e).fields
+        val add = db.set(p)
+      }
+      Ok(Json.obj("status" -> "succeed", "operation" -> "add"))
+    case e @ JsError(_) =>
+      var errorList = List[JsObject]()
+      val errors = JsError.toJson(e).fields
 
-//       for (err <- errors){
-//         errorList = Json.obj("location" -> err._1 , "details" -> err._2(0)("msg")(0)) :: errorList
-//       }
+      for (err <- errors){
+        errorList = Json.obj("location" -> err._1 , "details" -> err._2(0)("msg")(0)) :: errorList
+      }
 
-//       Results.Status(405)(Json.obj("status" -> true,"description" -> "Invalid Input", "error" -> Json.obj("data" -> errorList)))
-//   }
-//  }
+      Results.Status(405)(Json.obj("status" -> true,"operation" -> "Invalid Input", "error" -> Json.obj("data" -> errorList)))
+  }
+ }
 
-//  def updateProduct = Action(parse.json) { request =>
-//   val result = Json.fromJson[List[Product]](request.body)
+ def updateIncentive = Action(parse.json) { request =>
+  val result = Json.fromJson[List[Incentive]](request.body)
 
-//   result match {
-//     case JsSuccess(products: List[Product], path: JsPath) => 
-//         try{
-//           for(product <- products){
-//             val db = app.db.collection("user_question").document(product.pid)
-//             val p = new ImmutableMap.Builder[String, Object]()
-//             .put("brand", product.brand)
-//             .put("name" , product.name)
-//             .put("price", product.price.toString)
-//             .put("salesURL", product.salesURL)
-//             .build()
-//             val add = db.update(p)
-//             println(add.get())
-//           }
-//           Ok("done")
+  result match {
+    case JsSuccess(incentives: List[Incentive], path: JsPath) => 
+        try{
+          for(incentive <- incentives){
+            val db = app.db.collection("incentive").document(incentive.iid)
+            val p = new ImmutableMap.Builder[String, Object]()
+            .put("code", incentive.code)
+            .put("start_date" , incentive.start_date)
+            .put("end_date", incentive.start_date)
+            .put("tc", incentive.tc)
+            .put("condition", incentive.condition)
+            .put("product_id", incentive.product_id)
+            .build()
+            val add = db.update(p)
+          }
+        Ok(Json.obj("status" -> "succeed", "operation" -> "update"))
       
-//          } catch   {
-//           //  Catches all types of error/exceptions
-//           //  Use case to handle known/possible errors and, e: Throwable for anything else
+         } catch   {
+          //  Catches all types of error/exceptions
+          //  Use case to handle known/possible errors and, e: Throwable for anything else
 
-//           case notFound: java.util.concurrent.ExecutionException => BadRequest("Doc not found")
-//           // @todo Solve this shit, find the specific error exception class instead of a catch all case of ExecutionException
-//           case e: Throwable =>{
-//             println("gsus test", e.getClass().getSimpleName())
-//             BadRequest(Json.obj("UNKNOWN" -> e.getMessage))}
-//          }
+          case notFound: java.util.concurrent.ExecutionException => BadRequest("Doc not found")
+          // @todo Solve this shit, find the specific error exception class instead of a catch all case of ExecutionException
+          case e: Throwable =>{
+            println("gsus test", e.getClass().getSimpleName())
+            BadRequest(Json.obj("UNKNOWN" -> e.getMessage))}
+         }
         
-//     case e @ JsError(_) =>
-//       var errorList = List[JsObject]()
-//       val errors = JsError.toJson(e).fields
+    case e @ JsError(_) =>
+      var errorList = List[JsObject]()
+      val errors = JsError.toJson(e).fields
 
-//       BadRequest(Json.obj("mes" -> JsError.toJson(e)))
+      BadRequest(Json.obj("mes" -> JsError.toJson(e)))
 
-//       for (err <- errors){
-//         errorList = Json.obj("location" -> err._1 , "details" -> err._2(0)("msg")(0)) :: errorList
-//       }
+      for (err <- errors){
+        errorList = Json.obj("location" -> err._1 , "details" -> err._2(0)("msg")(0)) :: errorList
+      }
 
-//       Results.Status(405)(Json.obj("status" -> true ,"description" -> "Invalid Input", "error" -> Json.obj("data" -> errorList)))  
-//       }
+      Results.Status(405)(Json.obj("status" -> true ,"operation" -> "Invalid Input", "error" -> Json.obj("data" -> errorList)))  
+      }
 
-//    }
+   }
 
-//  def deleteProduct(id: String) = Action { request =>
-//   val exist = app.db.collection("product").document(id).get().get().exists()
+ def deleteIncentive(id: String) = Action { request =>
+  val exist = app.db.collection("incentive").document(id).get().get().exists()
 
-//   exist match {
-//     case true => {
-//       val db = app.db.collection("product").document(id).delete()
-//       Ok("data with id " + id + " is deleted") 
-//     }
-//     case _ => Results.Status(400)(id + " doesnt exist")
-//   }
-//  }
-// }
+  exist match {
+    case true => {
+      val db = app.db.collection("incentive").document(id).delete()
+      Ok(Json.obj("status" -> "succeed", "operation" -> "delete"))
+    }
+    case _ => Results.Status(400)(id + " doesnt exist")
+  }
+ }
+}

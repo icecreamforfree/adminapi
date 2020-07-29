@@ -29,7 +29,7 @@ class FirestoreProductController @Inject()(cc: ControllerComponents)(implicit as
   implicit val ProductReads: Reads[Product] = Json.reads[Product]
   implicit val ReviewWrites = Json.writes[Review]
 
-  def getProduct: JsValue = {
+  def getProduct = Action {
         var list = List[List[String]]()
 
         val querySnapshot = app.db.collection("product").get().get()
@@ -129,7 +129,7 @@ class FirestoreProductController @Inject()(cc: ControllerComponents)(implicit as
 
         val add = db.set(p)
       }
-      Ok("succeed")
+      Ok(Json.obj("status" -> "succeed", "operation" -> "add"))
     case e @ JsError(_) =>
       var errorList = List[JsObject]()
       val errors = JsError.toJson(e).fields
@@ -159,7 +159,7 @@ class FirestoreProductController @Inject()(cc: ControllerComponents)(implicit as
             val add = db.update(p)
             println(add.get())
           }
-          Ok("done")
+      Ok(Json.obj("status" -> "succeed", "operation" -> "update"))
       
          } catch   {
           //  Catches all types of error/exceptions
@@ -193,7 +193,7 @@ class FirestoreProductController @Inject()(cc: ControllerComponents)(implicit as
   exist match {
     case true => {
       val db = app.db.collection("product").document(id).delete()
-      Ok("data with id " + id + " is deleted") 
+      Ok(Json.obj("status" -> "succeed", "operation" -> "delete"))
     }
     case _ => Results.Status(400)(id + " doesnt exist")
   }
