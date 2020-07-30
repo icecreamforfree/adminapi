@@ -78,3 +78,5 @@ DELETE /psql/incentive                      controllers.PsqlIncentiveController.
 GET     /product                                controllers.MainController.getProduct
 GET     /review                                controllers.MainController.getReview(id: String)
 DELETE /product                                controllers.MainController.deleteProduct(id: String)
+POST   /product                                 controllers.MainController.addProduct
+PUT   /product                                 controllers.MainController.updateProduct

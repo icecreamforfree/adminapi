@@ -8,6 +8,6 @@ trait Prod {
     def getProduct: JsValue
     def getReview(id: String): List[Review]
     def deleteProduct(id: String) : Boolean
-    // def addProduct: Unit
-    // def updateProduct: Unit 
+    def addProduct(products: List[Product]): Unit
+    def updateProduct(products: List[Product]): Unit 
 }
