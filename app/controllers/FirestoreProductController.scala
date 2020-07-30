@@ -11,7 +11,6 @@ import com.google.api.gax.rpc.NotFoundException
 import scala.collection.mutable.HashMap 
 import java.util.Map
 import scala.collection.JavaConverters._
-import db.Prod
 
 /**
  * This controller creates an `Action` to handle HTTP requests to the
@@ -90,6 +89,7 @@ class FirestoreProductController @Inject()(cc: ControllerComponents)(implicit as
           list = reviews :: list
         }
           })
+          println(list)
           val empty = list.isEmpty
           empty match {
             case true => Results.Status(400)(id + " doesnt exist")

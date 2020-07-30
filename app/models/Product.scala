@@ -1,10 +1,9 @@
 package models
 
-case class Product(_id: String, brand: String, name: String, price: Double, salesURL: String)
+import play.api.libs.json._
 
-object JsonFormats{
-    import play.api.libs.json.{Json, OFormat}
+case class Product(pid: String, brand: String, name: String, price: Double, sales_url: String)
 
+object ProductFormats{
     implicit val productFormat = Json.format[Product]
-
 }

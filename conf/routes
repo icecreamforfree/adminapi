@@ -22,7 +22,7 @@ DELETE /firestore/products                 controllers.FirestoreProductControlle
 DELETE /psql/products                      controllers.PsqlProductController.deleteProduct(id: String)
 
 #get product review only
-GET     /firebase/review                     controllers.FirestoreProductController.getReview(id: String)
+GET     /firestore/review                     controllers.FirestoreProductController.getReview(id: String)
 
 #USERQUESTION#
 #add user question
@@ -75,4 +75,6 @@ PUT     /psql/incentive                      controllers.PsqlIncentiveController
 DELETE /firestore/incentive                 controllers.FirestoreIncentiveController.deleteIncentive(id: String)
 DELETE /psql/incentive                      controllers.PsqlIncentiveController.deleteIncentive(id: String)
 
-#GET     /getProduct                                controllers.MainController.getProduct
+GET     /product                                controllers.MainController.getProduct
+GET     /review                                controllers.MainController.getReview(id: String)
+DELETE /product                                controllers.MainController.deleteProduct(id: String)
