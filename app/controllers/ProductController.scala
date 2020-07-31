@@ -3,15 +3,13 @@ package controllers
 import com.google.common.collect.ImmutableMap
 import javax.inject._
 import play.api.mvc._
-import db.FirebaseSetup
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
 import java.lang.Object
 import com.google.api.gax.rpc.NotFoundException
-import scala.collection.mutable.HashMap 
 import java.util.Map
 import scala.collection.JavaConverters._
-import db.Prod
+import db.Op
 import models.Review._
 import models.ReviewFormats._
 import models.Product
@@ -19,20 +17,20 @@ import models.ProductFormats._
 
 
 @Singleton
-class MainController @Inject()(cc: ControllerComponents)(implicit assetsFinder: AssetsFinder)
+class ProductController @Inject()(cc: ControllerComponents)(implicit assetsFinder: AssetsFinder)
   extends AbstractController(cc) {
     // val db = System.getenv("DATABASE")
-    val db = "PSQL"
-    var mainDB: Prod = _
+    val db = "FIRESTORE"
+    var mainDB: Op = _
 
     if(db == "PSQL") {
-        import _root_.db.psql.ProductOp
-        mainDB = new ProductOp
+        import _root_.db.psql.Operations
+        mainDB = new Operations
         println("psql")
     }
     else if(db == "FIRESTORE") {
-        import _root_.db.firestore.ProductOp
-        mainDB = new ProductOp 
+        import _root_.db.firestore.Operations
+        mainDB = new Operations 
         println("firestore")
     }
 
@@ -44,7 +42,6 @@ class MainController @Inject()(cc: ControllerComponents)(implicit assetsFinder: 
     def getReview(id: String) = Action {request =>
       try {
         val data = mainDB.getReview(id)
-        println(data)
         val empty = data.isEmpty
           empty match {
             case true => Results.Status(400)(id + " doesnt exist")
@@ -72,7 +69,7 @@ class MainController @Inject()(cc: ControllerComponents)(implicit assetsFinder: 
         case true => {
           Ok(Json.obj("status" -> "succeed", "operation" -> "delete"))
         }
-        case _ => Results.Status(400)(id + " doesnt exist")
+        case _ => Results.Status(400)(Json.obj("status" -> "failed", "operation" -> "delete", "description" -> "Id not found"))
       }
     }
 
@@ -80,8 +77,19 @@ class MainController @Inject()(cc: ControllerComponents)(implicit assetsFinder: 
       val result = Json.fromJson[List[Product]](request.body)
       result match {
         case JsSuccess(products: List[Product], path: JsPath) =>
-          val data = mainDB.addProduct(products)
-          Ok(Json.obj("status" -> "succeed", "operation" -> "add"))
+          try{
+            val data = mainDB.addProduct(products)
+            Ok(Json.obj("status" -> "succeed", "operation" -> "update"))
+          } catch   {
+            //  Catches all types of error/exceptions
+            //  Use case to handle known/possible errors and, e: Throwable for anything else
+
+            case notFound: java.util.concurrent.ExecutionException => BadRequest("Doc not found")
+            // @todo Solve this shit, find the specific error exception class instead of a catch all case of ExecutionException
+            case e: Throwable =>{
+              println("gsus test", e.getClass().getSimpleName())
+              BadRequest(Json.obj("UNKNOWN" -> e.getMessage))}
+          }        
         case e @ JsError(_) =>
           var errorList = List[JsObject]()
           val errors = JsError.toJson(e).fields
