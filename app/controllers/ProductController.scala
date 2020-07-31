@@ -7,6 +7,7 @@ import play.api.libs.json._
 import play.api.libs.functional.syntax._
 import java.lang.Object
 import com.google.api.gax.rpc.NotFoundException
+import org.postgresql.util.PSQLException
 import java.util.Map
 import scala.collection.JavaConverters._
 import db.Op
@@ -34,9 +35,27 @@ class ProductController @Inject()(cc: ControllerComponents)(implicit assetsFinde
         println("firestore")
     }
 
+    def exception(operation: String ,details: JsObject): JsObject = {
+      val tobeReturned = Json.obj("status" -> "failed", "operation" -> operation , "details" -> details)
+      tobeReturned
+    }
+
+    def succeed(operation: String, data: JsValue): JsObject = {
+      val tobeReturned = Json.obj("status" -> "succeed" , "operation" -> operation, "data" -> data)
+      tobeReturned
+    }
+
     def getProduct = Action {
-      val data = mainDB.getProduct
-      Ok(data)
+      try {
+        val data = mainDB.getProduct
+        Ok(succeed("get product", data))
+      } catch   {
+          case e : PSQLException => BadRequest(exception("get product", Json.obj("description" -> "Doc not found")))
+          case notFound: java.util.concurrent.ExecutionException => BadRequest(exception("get product", Json.obj("description" -> "Doc not found")))
+          // @todo Solve this shit, find the specific error exception class instead of a catch all case of ExecutionException
+          case e: Throwable =>{
+            Results.Status(405)(exception("get product", Json.obj("description" ->e.getMessage)))}
+         }
     }
 
     def getReview(id: String) = Action {request =>
@@ -47,29 +66,26 @@ class ProductController @Inject()(cc: ControllerComponents)(implicit assetsFinde
             case true => Results.Status(400)(id + " doesnt exist")
             case false => {
               val result: JsValue = Json.toJson(data)
-              Ok(result)
+              Ok(succeed("get review", result))
             }
           }
       } catch   {
-          //  Catches all types of error/exceptions
-          //  Use case to handle known/possible errors and, e: Throwable for anything else
-
-          case notFound: java.util.concurrent.ExecutionException => BadRequest("Doc not found")
+          case notFound: java.util.concurrent.ExecutionException => BadRequest(exception("get review", Json.obj("description" -> "Doc not found")))
           // @todo Solve this shit, find the specific error exception class instead of a catch all case of ExecutionException
           case e: Throwable =>{
             println("gsus test", e.getClass().getSimpleName())
-            BadRequest(Json.obj("UNKNOWN" -> e.getMessage))}
+             Results.Status(405)(exception("get review", Json.obj("description" ->e.getMessage)))
+            }
          }
-
     } 
 
     def deleteProduct(id: String) = Action {
       val data = mainDB.deleteProduct(id)
       data match {
         case true => {
-          Ok(Json.obj("status" -> "succeed", "operation" -> "delete"))
+        Ok(succeed("delete product",Json.parse("""{"id" : "id"}""") ))
         }
-        case _ => Results.Status(400)(Json.obj("status" -> "failed", "operation" -> "delete", "description" -> "Id not found"))
+        case _ => Results.Status(400)(exception("delete product",Json.obj("description" -> "Id not found")))
       }
     }
 
@@ -79,17 +95,13 @@ class ProductController @Inject()(cc: ControllerComponents)(implicit assetsFinde
         case JsSuccess(products: List[Product], path: JsPath) =>
           try{
             val data = mainDB.addProduct(products)
-            Ok(Json.obj("status" -> "succeed", "operation" -> "update"))
-          } catch   {
-            //  Catches all types of error/exceptions
-            //  Use case to handle known/possible errors and, e: Throwable for anything else
-
-            case notFound: java.util.concurrent.ExecutionException => BadRequest("Doc not found")
+            Ok(succeed("add product", Json.parse("""{"id" : "*"}"""))) 
+          }catch   {
             // @todo Solve this shit, find the specific error exception class instead of a catch all case of ExecutionException
             case e: Throwable =>{
               println("gsus test", e.getClass().getSimpleName())
-              BadRequest(Json.obj("UNKNOWN" -> e.getMessage))}
-          }        
+              BadRequest(exception("add product", Json.obj("description" ->e.getMessage)))}
+         }     
         case e @ JsError(_) =>
           var errorList = List[JsObject]()
           val errors = JsError.toJson(e).fields
@@ -97,7 +109,7 @@ class ProductController @Inject()(cc: ControllerComponents)(implicit assetsFinde
           for (err <- errors){
             errorList = Json.obj("location" -> err._1 , "details" -> err._2(0)("msg")(0)) :: errorList
           }
-          Results.Status(405)(Json.obj("status" -> true,"description" -> "Invalid Input", "error" -> Json.obj("data" -> errorList)))
+             Results.Status(405)(exception("add product", Json.obj("data" -> errorList)))
           }
     }
 
@@ -108,29 +120,24 @@ class ProductController @Inject()(cc: ControllerComponents)(implicit assetsFinde
           case JsSuccess(products: List[Product], path: JsPath) => 
               try{
                 val data = mainDB.updateProduct(products)
-                Ok(Json.obj("status" -> "succeed", "operation" -> "update"))
+                Ok(succeed("update product", Json.parse("""{"id" : "*"}"""))) 
               } catch   {
-                //  Catches all types of error/exceptions
-                //  Use case to handle known/possible errors and, e: Throwable for anything else
-
-                case notFound: java.util.concurrent.ExecutionException => BadRequest("Doc not found")
+                case notFound: java.util.concurrent.ExecutionException => BadRequest(exception("update product", Json.obj("description" -> "Doc not found")))
                 // @todo Solve this shit, find the specific error exception class instead of a catch all case of ExecutionException
                 case e: Throwable =>{
                   println("gsus test", e.getClass().getSimpleName())
-                  BadRequest(Json.obj("UNKNOWN" -> e.getMessage))}
+                  BadRequest(exception("update product", Json.obj("description" ->e.getMessage)))}
               }
               
           case e @ JsError(_) =>
             var errorList = List[JsObject]()
             val errors = JsError.toJson(e).fields
 
-            BadRequest(Json.obj("mes" -> JsError.toJson(e)))
-
             for (err <- errors){
               errorList = Json.obj("location" -> err._1 , "details" -> err._2(0)("msg")(0)) :: errorList
             }
 
-            Results.Status(405)(Json.obj("status" -> true ,"description" -> "Invalid Input", "error" -> Json.obj("data" -> errorList)))  
-            }
+             Results.Status(405)(exception("update product", Json.obj("data" -> errorList)))
+             }
         }
   }

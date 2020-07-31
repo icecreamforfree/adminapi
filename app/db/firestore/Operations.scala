@@ -24,7 +24,7 @@ class Operations extends Op{
 
         docs.forEach(doc => {
         val productid = doc.getId()
-            val name = doc.getString("product_name")
+            val name = doc.getString("name")
             val brand = doc.getString("brand")
             val price = doc.get("price").toString
             val sales_url = doc.getString("sales_url")
