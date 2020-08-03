@@ -122,7 +122,6 @@ class ProductController @Inject()(cc: ControllerComponents)(implicit assetsFinde
                 val data = mainDB.updateProduct(products)
                 Ok(succeed("update product", Json.parse("""{"id" : "*"}"""))) 
               } catch   {
-                case notFound: java.util.concurrent.ExecutionException => BadRequest(exception("update product", Json.obj("description" -> "Doc not found")))
                 // @todo Solve this shit, find the specific error exception class instead of a catch all case of ExecutionException
                 case e: Throwable =>{
                   println("gsus test", e.getClass().getSimpleName())

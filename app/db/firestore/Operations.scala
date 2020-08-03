@@ -2,7 +2,7 @@ package db.firestore
 import db.FirebaseSetup
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
-import java.lang.Object
+// import java.lang.Object
 import com.google.api.gax.rpc.NotFoundException
 import com.google.common.collect.ImmutableMap
 import models._
@@ -10,29 +10,29 @@ import models.IncentiveFormats._
 import models.ReviewFormats._
 import models.ProductFormats._
 import models.QuestionFormats._
-
+import org.joda.time.DateTime
+import java.text.SimpleDateFormat
+import java.util.Date
 import play.api.libs.json._
 import db.Op
 
 class Operations extends Op{
     val app = new FirebaseSetup
     def getProduct: JsValue = {
-        var list = List[List[String]]()
+        var list = List[Product]()
 
         val querySnapshot = app.db.collection("product").get().get()
         val docs = querySnapshot.getDocuments()
 
         docs.forEach(doc => {
-        val productid = doc.getId()
+            val productid = doc.getId()
             val name = doc.getString("name")
             val brand = doc.getString("brand")
-            val price = doc.get("price").toString
+            val price = doc.getDouble("price")
             val sales_url = doc.getString("sales_url")
-            list = List(productid, brand, name, price, sales_url) :: list
+            list = Product(pid= productid, brand= brand, name = name, price = price, sales_url=sales_url) :: list
         })
-
-        val seclist = list.map(l => Product(pid= l(0), brand= l(1), name = l(2), price = l(3).toDouble, sales_url=l(4)))
-        val result : JsValue = Json.toJson(seclist)
+        val result : JsValue = Json.toJson(list)
         result
     }
 
@@ -56,10 +56,10 @@ class Operations extends Op{
 
       def collect(product: Product) = {
         val db = app.db.collection("user_question").document(product.pid)
-        val p = new ImmutableMap.Builder[Object,Object]()
+        val p = new ImmutableMap.Builder[String,Any]()
         .put("brand", product.brand)
         .put("name" , product.name)
-        .put("price", product.price.toString)
+        .put("price", product.price)
         .put("sales_url", product.sales_url)
         .build()
 
@@ -68,15 +68,17 @@ class Operations extends Op{
     }
 
     def updateProduct(products: List[Product]): Unit = {
-      for(product <- products){
-        val db = app.db.collection("user_question").document(product.pid)
-        val p = new ImmutableMap.Builder[String, Object]()
-        .put("brand", product.brand)
-        .put("name" , product.name)
-        .put("price", product.price.toString)
-        .put("sales_url", product.sales_url)
-        .build()
-        val add = db.update(p)
+      products.map(product => collect(product))
+      def collect(product: Product) = {
+          val db = app.db.collection("user_question").document(product.pid)
+          val p = new ImmutableMap.Builder[String, Object]()
+          .put("brand", product.brand)
+          .put("name" , product.name)
+          .put("sales_url", product.sales_url)
+          .build()
+
+          val add = db.update(p)
+          val add2 = db.update("price" , product.price)
       }
     }
 
@@ -89,7 +91,7 @@ class Operations extends Op{
     }
 
     def getIncentive: JsValue = {
-      var list = List[List[String]]()
+      var list = List[Incentive]()
 
       val querySnapshot = app.db.collection("incentive").get().get()
       val docs = querySnapshot.getDocuments()
@@ -97,16 +99,14 @@ class Operations extends Op{
       docs.forEach(doc => {
           val iid = doc.getId()
           val code = doc.getString("code")
-          val sdate = doc.getString("start_date")
-          val edate = doc.getString("end_date")
+          val sdate = doc.getDate("start_date") 
+          val edate = doc.getDate("end_date")
           val tc = doc.getString("tc")
           val condition = doc.getString("condition")
           val pid = doc.getString("product_id")
-          list = List(iid,code, sdate,edate,tc,condition,pid) :: list
+          list = Incentive(iid= iid, code= code, start_date= sdate, end_date = edate, tc=tc, condition=condition ,product_id=pid) :: list
       })
-
-      val seclist = list.map(l => Incentive(iid= l(0), code= l(1),  start_date= l(2), end_date = l(3), tc=l(4), condition=l(5) ,product_id=l(6)))
-      val result : JsValue = Json.toJson(seclist)
+      val result : JsValue = Json.toJson(list)
       result
     }
 
@@ -115,7 +115,7 @@ class Operations extends Op{
 
       def collect(incentive: Incentive) = {
         val db = app.db.collection("incentive").document(incentive.iid)
-        val p = new ImmutableMap.Builder[Object,Object]()
+        val p = new ImmutableMap.Builder[String,Any]()
         .put("code", incentive.code)
         .put("start_date" , incentive.start_date)
         .put("end_date", incentive.start_date)
@@ -133,13 +133,13 @@ class Operations extends Op{
           val db = app.db.collection("incentive").document(incentive.iid)
           val p = new ImmutableMap.Builder[String, Object]()
           .put("code", incentive.code)
-          .put("start_date" , incentive.start_date)
-          .put("end_date", incentive.start_date)
           .put("tc", incentive.tc)
           .put("condition", incentive.condition)
           .put("product_id", incentive.product_id)
           .build()
           val add = db.update(p)
+          val add2 = db.update("start_date" , incentive.start_date)
+          val add3 = db.update("end_date" , incentive.end_date)          
         }
       }
     
@@ -152,7 +152,7 @@ class Operations extends Op{
     }
 
     def getReviewQuestion: JsValue = {
-      var list = List[List[String]]()
+      var list = List[Question]()
       val querySnapshot = app.db.collection("review_question").get().get()
       val docs = querySnapshot.getDocuments()
 
@@ -160,11 +160,9 @@ class Operations extends Op{
         val qid = doc.getId()
         val question = doc.getString("question")
         val types = doc.getString("type")
-        list = List(qid,question,types) :: list
+        list = Question(qid= qid, question= question, types = types) :: list
       })
-
-      val seclist = list.map(l => Question(qid= l(0), question= l(1), types = l(2)))
-      val result : JsValue = Json.toJson(seclist)
+      val result : JsValue = Json.toJson(list)
       result
     }
 
@@ -202,7 +200,7 @@ class Operations extends Op{
     }
 
     def getInfoQuestion: JsValue = {
-      var list = List[List[String]]()
+      var list = List[Question]()
       val querySnapshot = app.db.collection("user_question").get().get()
       val docs = querySnapshot.getDocuments()
 
@@ -210,11 +208,9 @@ class Operations extends Op{
         val qid = doc.getId()
         val question = doc.getString("question")
         val types = doc.getString("type")
-        list = List(qid,question,types) :: list
+        list = Question(qid= qid, question= question, types = types) :: list
       })
-
-      val seclist = list.map(l => Question(qid= l(0), question= l(1), types = l(2)))
-      val result : JsValue = Json.toJson(seclist)
+      val result : JsValue = Json.toJson(list)
       result
     }
 

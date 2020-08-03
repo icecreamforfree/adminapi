@@ -8,31 +8,30 @@ import models.ProductFormats._
 import models.QuestionFormats._
 import db.Op
 import db.PsqlSetup
+import java.text.SimpleDateFormat
+
 
 class Operations extends Op {
     val setup = new PsqlSetup
     val db = setup.db
-
     def getProduct = {
-      var list = List[List[String]]()
+      var list = List[Product]()
       val conn = db.getConnection()
       val stmt = conn.createStatement()  
-
         try {
           val rs = stmt.executeQuery("Select * from product")
           while (rs.next()) {
             val productid = rs.getString("_id")
             val name = rs.getString("product_name")
             val brand = rs.getString("brand")
-            val price = rs.getLong("price").toString
+            val price = rs.getLong("price")
             val sales_url = rs.getString("sales_url")
-            list = List(productid, brand, name, price, sales_url) :: list
+            list = Product(pid= productid, brand= brand, name = name, price = price, sales_url=sales_url) :: list
           }
         } finally {   
           conn.close()
         }
-        val seclist = list.map(l => Product(pid= l(0), brand= l(1), name = l(2), price = l(3).toDouble, sales_url=l(4)))
-        val result : JsValue = Json.toJson(seclist)        
+        val result : JsValue = Json.toJson(list)        
         result
   }
 
@@ -101,7 +100,7 @@ class Operations extends Op {
     }
 
     def getIncentive = {
-      var list = List[List[String]]()
+      var list = List[Incentive]()
       val conn = db.getConnection()
       val stmt = conn.createStatement()
 
@@ -112,19 +111,17 @@ class Operations extends Op {
         while (rs.next()) {
           val iid = rs.getString("_id")
           val code = rs.getString("code")
-          val sdate = rs.getDate("start_date").toString
-          val edate = rs.getDate("end_date").toString
+          val sdate = rs.getDate("start_date")
+          val edate = rs.getDate("end_date")
           val tc = rs.getString("tc")
           val condition = rs.getString("condition")
           val pid = rs.getString("product_id")
-          list = List(iid,code, sdate,edate,tc,condition,pid) :: list
+          list = Incentive(iid= iid, code= code, start_date= sdate, end_date = edate, tc=tc, condition=condition ,product_id=pid) :: list
         }
       } finally {   
         conn.close()
       }
-      //format.parse(l(2)),
-      val seclist = list.map(l => Incentive(iid= l(0), code= l(1),  start_date= l(2), end_date = l(3), tc=l(4), condition=l(5) ,product_id=l(6)))
-      val result : JsValue = Json.toJson(seclist)
+      val result : JsValue = Json.toJson(list)
       result
     }
 
@@ -175,25 +172,22 @@ class Operations extends Op {
     }
 
     def getReviewQuestion = {
-      var list = List[List[String]]()
+      var list = List[Question]()
       val conn = db.getConnection()
       val stmt = conn.createStatement()
 
       try {
-        
         val rs   = stmt.executeQuery("Select * from review_question")
-
         while (rs.next()) {
           val qid = rs.getString("_id")
           val question = rs.getString("question")
           val types = rs.getString("type")
-          list = List(qid,question,types) :: list
+        list = Question(qid= qid, question= question, types = types) :: list
         }
       } finally {   
         conn.close()
       }
-      val seclist = list.map(l => Question(qid= l(0), question= l(1), types = l(2)))
-      val result : JsValue = Json.toJson(seclist)
+      val result : JsValue = Json.toJson(list)
       result
     }
 
@@ -234,25 +228,22 @@ class Operations extends Op {
     }
 
     def getInfoQuestion = {
-      var list = List[List[String]]()
+      var list = List[Question]()
       val conn = db.getConnection()
       val stmt = conn.createStatement()
 
       try {
-        
         val rs   = stmt.executeQuery("Select * from user_question")
-
         while (rs.next()) {
           val qid = rs.getString("_id")
           val question = rs.getString("question")
           val types = rs.getString("type")
-          list = List(qid,question,types) :: list
+        list = Question(qid= qid, question= question, types = types) :: list
         }
       } finally {   
         conn.close()
       }
-      val seclist = list.map(l => Question(qid= l(0), question= l(1), types = l(2)))
-      val result : JsValue = Json.toJson(seclist)
+      val result : JsValue = Json.toJson(list)
       result
     }
 
