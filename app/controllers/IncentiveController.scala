@@ -13,10 +13,11 @@ import scala.collection.JavaConverters._
 import db.Op
 import models.Incentive
 import models.IncentiveFormats._
+import auth.AuthAction
 
 
 @Singleton
-class IncentiveController @Inject()(cc: ControllerComponents)(implicit assetsFinder: AssetsFinder)
+class IncentiveController @Inject()(cc: ControllerComponents, authAction: AuthAction)(implicit assetsFinder: AssetsFinder)
   extends AbstractController(cc) {
     // val db = System.getenv("DATABASE")
     val db = "FIRESTORE"
@@ -42,7 +43,7 @@ class IncentiveController @Inject()(cc: ControllerComponents)(implicit assetsFin
       tobeReturned
     }
 
-    def getIncentive = Action {
+    def getIncentive = authAction {
       try {
         val data = mainDB.getIncentive
         Ok(succeed("get incentive", data))

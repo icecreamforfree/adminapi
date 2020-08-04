@@ -15,13 +15,14 @@ import models.Review._
 import models.ReviewFormats._
 import models.Product
 import models.ProductFormats._
+import auth.AuthAction
 
 
 @Singleton
-class ProductController @Inject()(cc: ControllerComponents)(implicit assetsFinder: AssetsFinder)
+class ProductController @Inject()(cc: ControllerComponents, authAction: AuthAction)(implicit assetsFinder: AssetsFinder)
   extends AbstractController(cc) {
     // val db = System.getenv("DATABASE")
-    val db = "FIRESTORE"
+    val db = "PSQL"
     var mainDB: Op = _
 
     if(db == "PSQL") {
@@ -45,7 +46,7 @@ class ProductController @Inject()(cc: ControllerComponents)(implicit assetsFinde
       tobeReturned
     }
 
-    def getProduct = Action {
+    def getProduct = authAction {
       try {
         val data = mainDB.getProduct
         Ok(succeed("get product", data))
@@ -58,7 +59,7 @@ class ProductController @Inject()(cc: ControllerComponents)(implicit assetsFinde
          }
     }
 
-    def getReview(id: String) = Action {request =>
+    def getReview(id: String) = authAction {request =>
       try {
         val data = mainDB.getReview(id)
         val empty = data.isEmpty

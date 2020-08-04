@@ -15,7 +15,10 @@ lazy val root = (project in file("."))
       // "org.reactivemongo" %% "play2-reactivemongo" % "0.12.4"
       // "org.reactivemongo" %% "play2-reactivemongo" % "0.20.11-play28",
       // "org.reactivemongo" %% "reactivemongo-play-json-compat" % "0.20.9-play28",
-      "org.mongodb.scala" %% "mongo-scala-driver" % "2.9.0"
+      "org.mongodb.scala" %% "mongo-scala-driver" % "2.9.0",
+      "com.pauldijou" %% "jwt-play" % "0.19.0",
+      "com.pauldijou" %% "jwt-core" % "0.19.0",
+      "com.auth0" % "jwks-rsa" % "0.6.1"
     ),
     scalacOptions ++= Seq(
       "-feature",

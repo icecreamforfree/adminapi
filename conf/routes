@@ -3,23 +3,23 @@
 # ~~~~
 
 GET     /product                                controllers.ProductController.getProduct
-DELETE /product                                controllers.ProductController.deleteProduct(id: String)
+DELETE /product                                 controllers.ProductController.deleteProduct(id: String)
 POST   /product                                 controllers.ProductController.addProduct
-PUT   /product                                 controllers.ProductController.updateProduct
+PUT   /product                                  controllers.ProductController.updateProduct
 
-GET     /review                                controllers.ProductController.getReview(id: String)
+GET     /review                                 controllers.ProductController.getReview(id: String)
 
-GET     /incentive                                controllers.IncentiveController.getIncentive
-DELETE /incentive                                controllers.IncentiveController.deleteIncentive(id: String)
-POST   /incentive                                 controllers.IncentiveController.addIncentive
-PUT   /incentive                                 controllers.IncentiveController.updateIncentive
+GET     /incentive                              controllers.IncentiveController.getIncentive
+DELETE /incentive                               controllers.IncentiveController.deleteIncentive(id: String)
+POST   /incentive                               controllers.IncentiveController.addIncentive
+PUT   /incentive                                controllers.IncentiveController.updateIncentive
 
-GET     /review_question                                controllers.ReviewQuestionController.getReviewQuestion
-DELETE /review_question                                controllers.ReviewQuestionController.deleteReviewQuestion(id: String)
-POST   /review_question                                 controllers.ReviewQuestionController.addReviewQuestion
-PUT   /review_question                                 controllers.ReviewQuestionController.updateReviewQuestion
+GET     /review_question                        controllers.ReviewQuestionController.getReviewQuestion
+DELETE /review_question                         controllers.ReviewQuestionController.deleteReviewQuestion(id: String)
+POST   /review_question                         controllers.ReviewQuestionController.addReviewQuestion
+PUT   /review_question                          controllers.ReviewQuestionController.updateReviewQuestion
 
-GET     /info_question                                controllers.InfoQuestionController.getInfoQuestion
-DELETE /info_question                                controllers.InfoQuestionController.deleteInfoQuestion(id: String)
-POST   /info_question                                 controllers.InfoQuestionController.addInfoQuestion
-PUT   /info_question                                 controllers.InfoQuestionController.updateInfoQuestion
+GET     /info_question                          controllers.InfoQuestionController.getInfoQuestion
+DELETE /info_question                           controllers.InfoQuestionController.deleteInfoQuestion(id: String)
+POST   /info_question                           controllers.InfoQuestionController.addInfoQuestion
+PUT   /info_question                            controllers.InfoQuestionController.updateInfoQuestion

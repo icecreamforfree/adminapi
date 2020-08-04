@@ -13,9 +13,10 @@ import scala.collection.JavaConverters._
 import db.Op
 import models.Question
 import models.QuestionFormats._
+import auth.AuthAction
 
 @Singleton
-class ReviewQuestionController @Inject()(cc: ControllerComponents)(implicit assetsFinder: AssetsFinder)
+class ReviewQuestionController @Inject()(cc: ControllerComponents, authAction: AuthAction)(implicit assetsFinder: AssetsFinder)
   extends AbstractController(cc) {
     // val db = System.getenv("DATABASE")
     val db = "FIRESTORE"
@@ -41,7 +42,7 @@ class ReviewQuestionController @Inject()(cc: ControllerComponents)(implicit asse
       tobeReturned
     }
 
-    def getReviewQuestion = Action {
+    def getReviewQuestion = authAction {
       try {
         val data = mainDB.getReviewQuestion
         Ok(succeed("get review question", data))
