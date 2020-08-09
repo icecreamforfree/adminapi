@@ -56,7 +56,7 @@ class InfoQuestionController @Inject()(cc: ControllerComponents, authAction: Aut
          }    
       }
   
-    def addInfoQuestion = Action(parse.json) { request =>
+    def addInfoQuestion = authAction(parse.json) { request =>
     
       val result = Json.fromJson[List[Question]](request.body)
       
@@ -83,7 +83,7 @@ class InfoQuestionController @Inject()(cc: ControllerComponents, authAction: Aut
       }
     }
 
-    def updateInfoQuestion = Action(parse.json) { request =>
+    def updateInfoQuestion = authAction(parse.json) { request =>
       val result = Json.fromJson[List[Question]](request.body)
 
       result match {
@@ -114,7 +114,7 @@ class InfoQuestionController @Inject()(cc: ControllerComponents, authAction: Aut
 
       }
 
-    def deleteInfoQuestion(id: String) = Action { request =>
+    def deleteInfoQuestion(id: String) = authAction { request =>
       val data = mainDB.deleteInfoQuestion(id)
       data match {
         case true => {

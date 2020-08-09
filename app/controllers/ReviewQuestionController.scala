@@ -55,7 +55,7 @@ class ReviewQuestionController @Inject()(cc: ControllerComponents, authAction: A
          }
     }
   
-    def addReviewQuestion = Action(parse.json) { request =>
+    def addReviewQuestion = authAction(parse.json) { request =>
     
       val result = Json.fromJson[List[Question]](request.body)
       
@@ -82,7 +82,7 @@ class ReviewQuestionController @Inject()(cc: ControllerComponents, authAction: A
       }
     }
 
-    def updateReviewQuestion = Action(parse.json) { request =>
+    def updateReviewQuestion = authAction(parse.json) { request =>
       val result = Json.fromJson[List[Question]](request.body)
 
       result match {
@@ -111,7 +111,7 @@ class ReviewQuestionController @Inject()(cc: ControllerComponents, authAction: A
 
       }
 
-    def deleteReviewQuestion(id: String) = Action { request =>
+    def deleteReviewQuestion(id: String) = authAction { request =>
       val data = mainDB.deleteReviewQuestion(id)
       data match {
         case true => {

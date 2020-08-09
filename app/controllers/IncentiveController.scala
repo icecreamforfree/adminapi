@@ -57,7 +57,7 @@ class IncentiveController @Inject()(cc: ControllerComponents, authAction: AuthAc
       }
     
 
-    def addIncentive = Action(parse.json) { request =>
+    def addIncentive = authAction(parse.json) { request =>
     
       val result = Json.fromJson[List[Incentive]](request.body)
       
@@ -85,7 +85,7 @@ class IncentiveController @Inject()(cc: ControllerComponents, authAction: AuthAc
       }
     }
 
-    def updateIncentive = Action(parse.json) { request =>
+    def updateIncentive = authAction(parse.json) { request =>
       val result = Json.fromJson[List[Incentive]](request.body)
 
       result match {
@@ -115,7 +115,7 @@ class IncentiveController @Inject()(cc: ControllerComponents, authAction: AuthAc
 
       }
 
-    def deleteIncentive(id: String) = Action { request =>
+    def deleteIncentive(id: String) = authAction { implicit request =>
 
       val data = mainDB.deleteIncentive(id)
       data match {

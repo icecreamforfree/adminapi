@@ -83,9 +83,9 @@ class Operations extends Op{
     }
 
     def deleteProduct(id: String): Boolean = {
-      val exist = app.db.collection("product").document(id).get().get().exists()
+      val exist = app.db.collection("user_question").document(id).get().get().exists()
       if(exist == true){
-          val db = app.db.collection("product").document(id).delete()
+          val db = app.db.collection("user_question").document(id).delete()
         }
       exist
     }

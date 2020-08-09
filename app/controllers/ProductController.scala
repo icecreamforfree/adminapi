@@ -80,7 +80,7 @@ class ProductController @Inject()(cc: ControllerComponents, authAction: AuthActi
          }
     } 
 
-    def deleteProduct(id: String) = Action {
+    def deleteProduct(id: String) = authAction {
       val data = mainDB.deleteProduct(id)
       data match {
         case true => {
@@ -90,7 +90,7 @@ class ProductController @Inject()(cc: ControllerComponents, authAction: AuthActi
       }
     }
 
-    def addProduct = Action(parse.json) { request =>
+    def addProduct = authAction(parse.json) { request =>
       val result = Json.fromJson[List[Product]](request.body)
       result match {
         case JsSuccess(products: List[Product], path: JsPath) =>
@@ -114,7 +114,7 @@ class ProductController @Inject()(cc: ControllerComponents, authAction: AuthActi
           }
     }
 
-      def updateProduct = Action(parse.json) { request =>
+      def updateProduct = authAction(parse.json) { request =>
         val result = Json.fromJson[List[Product]](request.body)
 
         result match {
