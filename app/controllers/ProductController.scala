@@ -16,13 +16,13 @@ import models.ReviewFormats._
 import models.Product
 import models.ProductFormats._
 import auth.AuthAction
-
+import auth.AuthActionZ
 
 @Singleton
-class ProductController @Inject()(cc: ControllerComponents, authAction: AuthAction)(implicit assetsFinder: AssetsFinder)
+class ProductController @Inject()(cc: ControllerComponents, authAction: AuthAction, authActionZ: AuthActionZ)(implicit assetsFinder: AssetsFinder)
   extends AbstractController(cc) {
     // val db = System.getenv("DATABASE")
-    val db = "PSQL"
+    val db = "FIRESTORE"
     var mainDB: Op = _
 
     if(db == "PSQL") {
@@ -46,7 +46,7 @@ class ProductController @Inject()(cc: ControllerComponents, authAction: AuthActi
       tobeReturned
     }
 
-    def getProduct = authAction {
+    def getProduct = authActionZ {
       try {
         val data = mainDB.getProduct
         Ok(succeed("get product", data))
@@ -57,9 +57,9 @@ class ProductController @Inject()(cc: ControllerComponents, authAction: AuthActi
           case e: Throwable =>{
             Results.Status(405)(exception("get product", Json.obj("description" ->e.getMessage)))}
          }
-    }
+    } 
 
-    def getReview(id: String) = authAction {request =>
+    def getReview(id: String) = authActionZ {request =>
       try {
         val data = mainDB.getReview(id)
         val empty = data.isEmpty
@@ -80,7 +80,7 @@ class ProductController @Inject()(cc: ControllerComponents, authAction: AuthActi
          }
     } 
 
-    def deleteProduct(id: String) = authAction {
+    def deleteProduct(id: String) = authActionZ {
       val data = mainDB.deleteProduct(id)
       data match {
         case true => {
@@ -90,7 +90,7 @@ class ProductController @Inject()(cc: ControllerComponents, authAction: AuthActi
       }
     }
 
-    def addProduct = authAction(parse.json) { request =>
+    def addProduct = authActionZ(parse.json) { request =>
       val result = Json.fromJson[List[Product]](request.body)
       result match {
         case JsSuccess(products: List[Product], path: JsPath) =>
@@ -114,7 +114,7 @@ class ProductController @Inject()(cc: ControllerComponents, authAction: AuthActi
           }
     }
 
-      def updateProduct = authAction(parse.json) { request =>
+      def updateProduct = authActionZ(parse.json) { request =>
         val result = Json.fromJson[List[Product]](request.body)
 
         result match {
