@@ -5,9 +5,11 @@ import play.api.libs.functional.syntax._
 // import java.lang.Object
 import com.google.api.gax.rpc.NotFoundException
 import com.google.common.collect.ImmutableMap
+import scala.collection.immutable._  
 import models._
 import models.IncentiveFormats._
 import models.ReviewFormats._
+import models.ReviewProFormats._
 import models.ProductFormats._
 import models.QuestionFormats._
 import org.joda.time.DateTime
@@ -15,6 +17,13 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import play.api.libs.json._
 import db.Op
+import spark.WordCount
+
+import org.apache.spark.sql.{SparkSession, SQLContext, Encoders}
+import org.apache.spark.sql.catalyst.encoders.ExpressionEncoder
+import org.apache.spark.sql.types.StructType
+import org.apache.spark.SparkContext
+import org.apache.spark.SparkConf
 
 class Operations extends Op{
     val app = new FirebaseSetup
@@ -23,6 +32,7 @@ class Operations extends Op{
 
         val querySnapshot = app.db.collection("product").get().get()
         val docs = querySnapshot.getDocuments()
+        println("g")
 
         docs.forEach(doc => {
             val productid = doc.getId()
@@ -246,4 +256,46 @@ class Operations extends Op{
       }
       exist
     }
+
+    def productReviewAnalysis: Boolean = {
+        var list = List[ReviewPro]()
+
+        val querySnapshot = app.db.collection("review").get().get()
+        val docs = querySnapshot.getDocuments()
+
+        docs.forEach(doc => {
+          val qid = doc.getId()
+          val incentive_date = doc.getString("incentive_given_date")
+          val incentive_id = doc.get("incentive_id").toString
+          val product_id = doc.getString("product_id")
+          val user_id = doc.getDouble("user_id")
+          list = ReviewPro(qid= qid, incentive_date = incentive_date, incentive_id = incentive_id, product_id= product_id) :: list
+        })
+
+        implicit def testEncoder: org.apache.spark.sql.Encoder[ReviewPro] =
+            org.apache.spark.sql.Encoders.kryo[ReviewPro]
+
+        lazy val conf = new SparkConf()
+          .setAppName("Test")
+          .set("spark.driver.allowMultipleContexts" , "true")
+          .setMaster("local")
+        val spark: SparkSession = SparkSession.builder
+          .config(conf)
+          .getOrCreate; 
+        import spark.implicits._
+        import org.apache.spark.sql.Encoders
+
+        
+        val sc = spark.sparkContext
+
+        val data = sc.parallelize(list)
+        // val ds = data.toDS()
+        // val ds = data.createDataset(data)
+        val ds2 = data.sortBy(r => r.incentive_date)
+
+        println(data)
+        // ds2.collect().foreach(println)
+        
+        true
+    } 
   }

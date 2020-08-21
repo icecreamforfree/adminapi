@@ -25,4 +25,6 @@ trait Op {
     def deleteReviewQuestion(id: String) : Boolean
     def addReviewQuestion(questions: List[Question]): Unit
     def updateReviewQuestion(questions: List[Question]): Unit 
+
+    def productReviewAnalysis: Boolean
 }

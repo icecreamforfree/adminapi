@@ -8,7 +8,7 @@ import play.api.mvc._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 import scala.language.postfixOps
-import com.google.firebase.auth.{FsirebaseAuth, FirebaseToken, FirebaseAuthException}
+import com.google.firebase.auth.{FirebaseAuth, FirebaseToken, FirebaseAuthException}
 
 // Our custom action implementation
 class AuthActionZ @Inject()(bodyParser: BodyParsers.Default)(implicit ec: ExecutionContext)
@@ -39,7 +39,7 @@ class AuthActionZ @Inject()(bodyParser: BodyParsers.Default)(implicit ec: Execut
   def validateJwt(token: String) = {
     try {
       val decodedToken = FirebaseAuth.getInstance().verifyIdToken(token);
-      true
+      decodedToken
     }
     catch {
       case e: FirebaseAuthException => Failure(e)

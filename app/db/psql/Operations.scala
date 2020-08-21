@@ -4,6 +4,7 @@ import org.postgresql.util.PSQLException
 import models._
 import models.IncentiveFormats._
 import models.ReviewFormats._
+import models.ReviewProFormats._
 import models.ProductFormats._
 import models.QuestionFormats._
 import db.Op
@@ -281,6 +282,10 @@ class Operations extends Op {
         val delete = stmt.executeUpdate(s"DELETE FROM user_question WHERE _id='$id'")
       }
       exist
+    }
+
+    def productReviewAnalysis: Boolean = {
+      true
     }
 
 }

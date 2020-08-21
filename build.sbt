@@ -18,7 +18,10 @@ lazy val root = (project in file("."))
       "org.mongodb.scala" %% "mongo-scala-driver" % "2.9.0",
       "com.pauldijou" %% "jwt-play" % "0.19.0",
       "com.pauldijou" %% "jwt-core" % "0.19.0",
-      "com.auth0" % "jwks-rsa" % "0.6.1"
+      "com.auth0" % "jwks-rsa" % "0.6.1",
+      "org.apache.spark"  %% "spark-core"              % "2.4.0",
+      "org.apache.spark"  %% "spark-sql"               % "2.4.0",
+      // "org.apache.spark"  %% "spark-mllib"             % "1.0.1"
     ),
     scalacOptions ++= Seq(
       "-feature",

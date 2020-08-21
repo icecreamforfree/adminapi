@@ -6,6 +6,7 @@ GET     /product                                controllers.ProductController.ge
 DELETE /product                                 controllers.ProductController.deleteProduct(id: String)
 POST   /product                                 controllers.ProductController.addProduct
 PUT   /product                                  controllers.ProductController.updateProduct
+GET     /test                                    controllers.ProductController.test
 
 GET     /review                                 controllers.ProductController.getReview(id: String)
 

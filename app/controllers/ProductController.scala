@@ -47,6 +47,8 @@ class ProductController @Inject()(cc: ControllerComponents, authAction: AuthActi
     }
 
     def getProduct = authActionZ {
+      
+
       try {
         val data = mainDB.getProduct
         Ok(succeed("get product", data))
@@ -57,6 +59,7 @@ class ProductController @Inject()(cc: ControllerComponents, authAction: AuthActi
           case e: Throwable =>{
             Results.Status(405)(exception("get product", Json.obj("description" ->e.getMessage)))}
          }
+
     } 
 
     def getReview(id: String) = authActionZ {request =>
@@ -140,4 +143,9 @@ class ProductController @Inject()(cc: ControllerComponents, authAction: AuthActi
              Results.Status(405)(exception("update product", Json.obj("data" -> errorList)))
              }
         }
+
+    def test = authActionZ { request =>
+      val data = mainDB.productReviewAnalysis
+      Ok(Json.obj("result"  -> data))
+    }
   }
