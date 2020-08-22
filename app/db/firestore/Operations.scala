@@ -17,13 +17,15 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import play.api.libs.json._
 import db.Op
-import spark.WordCount
 
 import org.apache.spark.sql.{SparkSession, SQLContext, Encoders}
 import org.apache.spark.sql.catalyst.encoders.ExpressionEncoder
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkConf
+import java.util.{Date, Calendar}
+import org.apache.spark.sql.functions.{from_unixtime, unix_timestamp, _}
+
 
 class Operations extends Op{
     val app = new FirebaseSetup
@@ -264,12 +266,16 @@ class Operations extends Op{
         val docs = querySnapshot.getDocuments()
 
         docs.forEach(doc => {
+          val rawDate = doc.getDate("incentive_given_date").toString
+          val simpleDateFormat:SimpleDateFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy");
+          val date : Date = simpleDateFormat.parse(rawDate)
+          val incentive_date = new SimpleDateFormat("yyyy/MM/dd").format(date) 
+
           val qid = doc.getId()
-          val incentive_date = doc.getString("incentive_given_date")
           val incentive_id = doc.get("incentive_id").toString
           val product_id = doc.getString("product_id")
-          val user_id = doc.getDouble("user_id")
-          list = ReviewPro(qid= qid, incentive_date = incentive_date, incentive_id = incentive_id, product_id= product_id) :: list
+          val user_id = doc.get("user_id").toString
+          list = ReviewPro(qid= qid, incentive_date = incentive_date, incentive_id = incentive_id, product_id= product_id, user_id = user_id) :: list
         })
 
         implicit def testEncoder: org.apache.spark.sql.Encoder[ReviewPro] =
@@ -288,13 +294,21 @@ class Operations extends Op{
         
         val sc = spark.sparkContext
 
-        val data = sc.parallelize(list)
+        val data = sc.parallelize(list).map(r => (r.qid, r.incentive_date, r.incentive_id, r.product_id, r.user_id)).toDF("id", "incentive_date","incentive_id","product_id","user_id")
         // val ds = data.toDS()
-        // val ds = data.createDataset(data)
-        val ds2 = data.sortBy(r => r.incentive_date)
+        val date = data.select(data("incentive_date")).collect().foreach(println)
 
-        println(data)
-        // ds2.collect().foreach(println)
+        //// get current date ////
+        val sdf = new SimpleDateFormat("yyyy/MM/dd");
+        //Getting current date
+        val cal = Calendar.getInstance();
+        val add = cal.add(Calendar.DAY_OF_MONTH, 30);  
+        val newDate = sdf.format(cal.getTime());  
+
+        //// less than is newer dates , greater than is older dates ////
+        val ds2 = data.filter(data("incentive_date") < lit(newDate.toString))
+
+        println(ds2.show())
         
         true
     } 
