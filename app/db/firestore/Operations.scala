@@ -14,7 +14,6 @@ import models.ProductFormats._
 import models.QuestionFormats._
 import org.joda.time.DateTime
 import java.text.SimpleDateFormat
-import java.util.Date
 import play.api.libs.json._
 import db.Op
 
@@ -274,8 +273,9 @@ class Operations extends Op{
           val qid = doc.getId()
           val incentive_id = doc.get("incentive_id").toString
           val product_id = doc.getString("product_id")
+          val reviews = doc.get("review answer").toString
           val user_id = doc.get("user_id").toString
-          list = ReviewPro(qid= qid, incentive_date = incentive_date, incentive_id = incentive_id, product_id= product_id, user_id = user_id) :: list
+          list = ReviewPro(qid= qid, incentive_date = incentive_date, incentive_id = incentive_id, product_id= product_id, reviews = reviews, user_id = user_id) :: list
         })
 
         implicit def testEncoder: org.apache.spark.sql.Encoder[ReviewPro] =
@@ -294,9 +294,10 @@ class Operations extends Op{
         
         val sc = spark.sparkContext
 
-        val data = sc.parallelize(list).map(r => (r.qid, r.incentive_date, r.incentive_id, r.product_id, r.user_id)).toDF("id", "incentive_date","incentive_id","product_id","user_id")
-        // val ds = data.toDS()
-        val date = data.select(data("incentive_date")).collect().foreach(println)
+        val data = sc.parallelize(list).map(r => (r.qid, r.incentive_date, r.incentive_id, r.product_id,r.reviews, r.user_id)).toDF("id", "incentive_date","incentive_id","product_id","reviews","user_id")
+        // val ds = data.toDS()s
+        // val date = data.select(data("incentive_date")).collect().foreach(println)
+        val date = data.select(data("reviews")).collect().foreach(println)
 
         //// get current date ////
         val sdf = new SimpleDateFormat("yyyy/MM/dd");
@@ -308,7 +309,8 @@ class Operations extends Op{
         //// less than is newer dates , greater than is older dates ////
         val ds2 = data.filter(data("incentive_date") < lit(newDate.toString))
 
-        println(ds2.show())
+
+        // println(ds2.show())
         
         true
     } 
